@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "CriterionRecord": {
+      "title": "CriterionRecord",
+      "description": "Detailed evaluation, definition, and evidence data for a single PAR Index criterion under Decision 2851/QĐ-UBND",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_.\\-]+$" },
+        "code": { "type": "string", "maxLength": 32 },
+        "domainId": { "type": "string", "enum": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"] },
+        "year": { "type": "number" },
+        "subGroup": { "type": "string", "enum": ["standard", "bonus", "penalty"] },
+        "groupTitle": { "type": "string", "maxLength": 500 },
+        "title": { "type": "string", "maxLength": 1000 },
+        "maxScore": { "type": "number" },
+        "type": { "type": "string", "maxLength": 32 },
+        "selfScore": { "type": "number" },
+        "verifiedScore": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed", "warning"] },
+        "assignedDept": { "type": "string", "maxLength": 200 },
+        "deadline": { "type": "string", "maxLength": 64 },
+        "regulationText": { "type": "string", "maxLength": 3000 },
+        "warningNote": { "type": "string", "maxLength": 2000 },
+        "inputs": { "type": "object" },
+        "evidences": { "type": "array" },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "updatedBy": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": [
+        "id",
+        "code",
+        "domainId",
+        "selfScore",
+        "verifiedScore",
+        "status",
+        "assignedDept",
+        "deadline",
+        "inputs",
+        "evidences",
+        "notes",
+        "updatedBy",
+        "updatedAt"
+      ]
+    },
+    "SummaryRecord": {
+      "title": "SummaryRecord",
+      "description": "Overall PAR Index summary metrics for a specific evaluation year",
+      "type": "object",
+      "properties": {
+        "year": { "type": "number" },
+        "totalSelfScore": { "type": "number" },
+        "totalVerifiedScore": { "type": "number" },
+        "bonusScore": { "type": "number" },
+        "penaltyScore": { "type": "number" },
+        "finalScore": { "type": "number" },
+        "evidenceRate": { "type": "number" },
+        "isLocked": { "type": "boolean" },
+        "updatedBy": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": [
+        "year",
+        "totalSelfScore",
+        "totalVerifiedScore",
+        "bonusScore",
+        "penaltyScore",
+        "finalScore",
+        "evidenceRate",
+        "isLocked",
+        "updatedBy",
+        "updatedAt"
+      ]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "System-wide configuration for evaluation years and Google Apps Script Drive integration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "activeYear": { "type": "number" },
+        "availableYears": { "type": "array" },
+        "gasWebAppUrl": { "type": "string", "maxLength": 1000 },
+        "driveFolderId": { "type": "string", "maxLength": 200 },
+        "driveFolderUrl": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "activeYear", "availableYears", "gasWebAppUrl", "driveFolderId", "driveFolderUrl", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Audit log entry for changes in PAR Index evaluation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "criterionId": { "type": "string", "maxLength": 64 },
+        "action": { "type": "string", "maxLength": 500 },
+        "actor": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "criterionId", "action", "actor", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/cchc_2851_criteria/{docId}": {
+      "schema": { "$ref": "#/entities/CriterionRecord" },
+      "description": "Stores PAR Index criteria definitions, scores, and evidence items"
+    },
+    "/cchc_2851_summary/{docId}": {
+      "schema": { "$ref": "#/entities/SummaryRecord" },
+      "description": "Stores yearly aggregated PAR Index summary scores"
+    },
+    "/cchc_system_config/{docId}": {
+      "schema": { "$ref": "#/entities/SystemConfig" },
+      "description": "Stores multi-year configuration and Google Apps Script Drive uploader parameters"
+    },
+    "/cchc_par_index_logs/{docId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Stores audit logs of scoring and administrative actions"
+    }
+  }
+}

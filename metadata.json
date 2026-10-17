@@ -1,0 +1,6 @@
+{
+  "name": "Hệ thống Theo dõi, Đánh giá & Xếp hạng CCHC Phường Hội An Đông",
+  "description": "Phần mềm quản lý, theo dõi, tự đánh giá và xếp hạng kết quả Cải cách hành chính (PAR Index) của UBND phường Hội An Đông theo Phụ lục II - Quyết định số 2851/QĐ-UBND.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

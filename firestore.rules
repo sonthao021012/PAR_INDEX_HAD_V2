@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_.\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidDomain(d) {
+      return d is string && d in ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+    }
+
+    function isValidCriterion(data) {
+      return data.keys().hasAll(['id', 'code', 'domainId', 'selfScore', 'verifiedScore', 'status', 'assignedDept', 'deadline', 'inputs', 'evidences', 'notes', 'updatedBy', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'code', 'domainId', 'year', 'subGroup', 'groupTitle', 'title', 'maxScore', 'type', 'selfScore', 'verifiedScore', 'status', 'assignedDept', 'deadline', 'regulationText', 'warningNote', 'inputs', 'evidences', 'notes', 'updatedBy', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 64
+        && data.code is string && data.code.size() >= 1 && data.code.size() <= 32
+        && isValidDomain(data.domainId)
+        && (!('year' in data) || (data.year is number && data.year >= 2020 && data.year <= 2050))
+        && (!('subGroup' in data) || (data.subGroup is string && data.subGroup in ['standard', 'bonus', 'penalty']))
+        && (!('groupTitle' in data) || (data.groupTitle is string && data.groupTitle.size() <= 500))
+        && (!('title' in data) || (data.title is string && data.title.size() <= 1000))
+        && (!('maxScore' in data) || (data.maxScore is number && data.maxScore >= 0 && data.maxScore <= 50))
+        && (!('type' in data) || (data.type is string && data.type.size() <= 32))
+        && (!('regulationText' in data) || (data.regulationText is string && data.regulationText.size() <= 3000))
+        && (!('warningNote' in data) || (data.warningNote is string && data.warningNote.size() <= 2000))
+        && data.selfScore is number && data.selfScore >= -10 && data.selfScore <= 50
+        && data.verifiedScore is number && data.verifiedScore >= -10 && data.verifiedScore <= 50
+        && data.status is string && data.status in ['pending', 'in_progress', 'completed', 'warning']
+        && data.assignedDept is string && data.assignedDept.size() <= 200
+        && data.deadline is string && data.deadline.size() <= 64
+        && data.inputs is map && data.inputs.size() <= 25
+        && data.evidences is list && data.evidences.size() <= 50
+        && (data.evidences.size() == 0 || data.evidences[0] is map)
+        && data.notes is string && data.notes.size() <= 2000
+        && data.updatedBy is string && data.updatedBy.size() <= 128
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidSummary(data) {
+      return data.keys().hasAll(['year', 'totalSelfScore', 'totalVerifiedScore', 'bonusScore', 'penaltyScore', 'finalScore', 'evidenceRate', 'isLocked', 'updatedBy', 'updatedAt'])
+        && data.keys().hasOnly(['year', 'totalSelfScore', 'totalVerifiedScore', 'bonusScore', 'penaltyScore', 'finalScore', 'evidenceRate', 'isLocked', 'updatedBy', 'updatedAt'])
+        && data.year is number && data.year >= 2020 && data.year <= 2050
+        && data.totalSelfScore is number && data.totalSelfScore >= 0 && data.totalSelfScore <= 150
+        && data.totalVerifiedScore is number && data.totalVerifiedScore >= 0 && data.totalVerifiedScore <= 150
+        && data.bonusScore is number && data.bonusScore >= 0 && data.bonusScore <= 20
+        && data.penaltyScore is number && data.penaltyScore >= 0 && data.penaltyScore <= 20
+        && data.finalScore is number && data.finalScore >= 0 && data.finalScore <= 150
+        && data.evidenceRate is number && data.evidenceRate >= 0 && data.evidenceRate <= 100
+        && data.isLocked is bool
+        && data.updatedBy is string && data.updatedBy.size() <= 128
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidSystemConfig(data) {
+      return data.keys().hasAll(['id', 'activeYear', 'availableYears', 'gasWebAppUrl', 'driveFolderId', 'driveFolderUrl', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'activeYear', 'availableYears', 'gasWebAppUrl', 'driveFolderId', 'driveFolderUrl', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 64
+        && data.activeYear is number && data.activeYear >= 2020 && data.activeYear <= 2050
+        && data.availableYears is list && data.availableYears.size() >= 1 && data.availableYears.size() <= 20
+        && data.availableYears[0] is number
+        && data.gasWebAppUrl is string && data.gasWebAppUrl.size() <= 1000
+        && data.driveFolderId is string && data.driveFolderId.size() <= 200
+        && data.driveFolderUrl is string && data.driveFolderUrl.size() <= 1000
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['id', 'criterionId', 'action', 'actor', 'timestamp'])
+        && data.keys().hasOnly(['id', 'criterionId', 'action', 'actor', 'timestamp'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 64
+        && data.criterionId is string && data.criterionId.size() <= 64
+        && data.action is string && data.action.size() <= 500
+        && data.actor is string && data.actor.size() <= 128
+        && data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    // Connection test endpoint required by Firebase validation
+    match /test/connection {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // CCHC 2851 Criteria Collection (Phụ lục II - QĐ 2851/QĐ-UBND)
+    match /cchc_2851_criteria/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if resource.data.domainId in ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+      allow create: if isValidId(docId) && isValidCriterion(incoming()) && incoming().id == docId;
+      allow update: if isValidId(docId) && isValidCriterion(incoming())
+        && incoming().id == existing().id
+        && incoming().diff(existing()).affectedKeys().hasOnly(['code', 'domainId', 'year', 'subGroup', 'groupTitle', 'title', 'maxScore', 'type', 'selfScore', 'verifiedScore', 'status', 'assignedDept', 'deadline', 'regulationText', 'warningNote', 'inputs', 'evidences', 'notes', 'updatedBy', 'updatedAt']);
+      allow delete: if isValidId(docId);
+    }
+
+    // CCHC 2851 Summary Collection
+    match /cchc_2851_summary/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if resource.data.year >= 2020;
+      allow create: if isValidId(docId) && isValidSummary(incoming());
+      allow update: if isValidId(docId) && isValidSummary(incoming())
+        && incoming().year == existing().year
+        && incoming().diff(existing()).affectedKeys().hasOnly(['totalSelfScore', 'totalVerifiedScore', 'bonusScore', 'penaltyScore', 'finalScore', 'evidenceRate', 'isLocked', 'updatedBy', 'updatedAt']);
+      allow delete: if isValidId(docId);
+    }
+
+    // System Configuration Collection (Multi-year & Google Apps Script Drive settings)
+    match /cchc_system_config/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if resource.data.id == 'main';
+      allow create: if isValidId(docId) && isValidSystemConfig(incoming()) && incoming().id == docId;
+      allow update: if isValidId(docId) && isValidSystemConfig(incoming())
+        && incoming().id == existing().id
+        && incoming().diff(existing()).affectedKeys().hasOnly(['activeYear', 'availableYears', 'gasWebAppUrl', 'driveFolderId', 'driveFolderUrl', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Audit Logs Collection
+    match /cchc_par_index_logs/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if resource.data.actor == 'UBND Phường Hội An Đông';
+      allow create: if isValidId(docId) && isValidLog(incoming()) && incoming().id == docId;
+      allow update, delete: if false;
+    }
+  }
+}

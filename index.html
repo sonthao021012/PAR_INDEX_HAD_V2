@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hệ thống Theo dõi, Đánh giá & Xếp hạng CCHC Phường Hội An Đông</title>
+    <meta
+      name="description"
+      content="Phần mềm quản lý, theo dõi, tự đánh giá và xếp hạng kết quả Cải cách hành chính (PAR Index) của UBND phường Hội An Đông theo Quyết định số 2851/QĐ-UBND."
+    />
+    <meta
+      property="og:title"
+      content="Hệ thống Theo dõi, Đánh giá & Xếp hạng CCHC Phường Hội An Đông"
+    />
+    <meta
+      property="og:description"
+      content="Phần mềm quản lý, theo dõi, tự đánh giá và xếp hạng kết quả Cải cách hành chính (PAR Index) của UBND phường Hội An Đông theo Quyết định số 2851/QĐ-UBND."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/custom.css" />
+  </head>
+  <body class="min-h-screen flex flex-col text-slate-900">
+    <!-- TOP BAR CONTRACT (3 Zones: 1-line Brand Wordmark | 5 Nav Links | 1 Primary CTA) -->
+    <header class="bg-white/95 backdrop-blur border-b border-slate-300 sticky top-0 z-30 shadow-xs no-print">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sm:gap-8">
+        <!-- Zone 1: Brand Wordmark (single text element) -->
+        <a
+          href="#dashboard"
+          id="brand-home-link"
+          class="text-sm sm:text-base font-extrabold tracking-tight text-blue-950 truncate"
+        >
+          UBND Phường Hội An Đông — PAR Index
+        </a>
+
+        <!-- Zone 2: 5 concise single-line text navigation links -->
+        <nav
+          aria-label="Điều hướng phân hệ chính"
+          class="hidden md:flex items-center gap-6 text-sm font-medium shrink-0"
+        >
+          <a
+            href="#dashboard"
+            id="nav-tab-dashboard"
+            class="text-blue-900 font-bold border-b-2 border-blue-800 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Tổng quan
+          </a>
+          <a
+            href="#scoring"
+            id="nav-tab-scoring"
+            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Bảng chấm điểm
+          </a>
+          <a
+            href="#units"
+            id="nav-tab-units"
+            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Theo dõi đơn vị
+          </a>
+          <a
+            href="#reports"
+            id="nav-tab-reports"
+            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Xuất báo cáo
+          </a>
+          <a
+            href="#settings"
+            id="nav-tab-settings"
+            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Cài đặt hệ thống
+          </a>
+        </nav>
+
+        <!-- Zone 3: 1 Primary Action -->
+        <div class="flex items-center shrink-0">
+          <button
+            type="button"
+            id="btn-top-export"
+            class="btn-tactile-primary px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Xuất báo cáo CCHC
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MOBILE NAVIGATION BAR -->
+    <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center gap-1.5 overflow-x-auto no-print">
+      <button
+        type="button"
+        data-mobile-tab="dashboard"
+        class="px-3 py-1.5 text-xs font-bold text-blue-900 bg-blue-50 rounded-lg whitespace-nowrap cursor-pointer"
+      >
+        Tổng quan
+      </button>
+      <button
+        type="button"
+        data-mobile-tab="scoring"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
+      >
+        Chấm điểm
+      </button>
+      <button
+        type="button"
+        data-mobile-tab="units"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
+      >
+        Đơn vị
+      </button>
+      <button
+        type="button"
+        data-mobile-tab="reports"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
+      >
+        Báo cáo
+      </button>
+      <button
+        type="button"
+        data-mobile-tab="settings"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
+      >
+        Cài đặt
+      </button>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <!-- ELEVATED HERO WORKSPACE BANNER -->
+      <section
+        class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-blue-800/40 flex flex-col xl:flex-row xl:items-center justify-between gap-5 no-print"
+      >
+        <div class="space-y-1.5">
+          <div class="text-xs font-semibold text-blue-200 tracking-wide">
+            ỦY BAN NHÂN DÂN PHƯỜNG HỘI AN ĐÔNG · THÀNH PHỐ ĐÀ NẴNG
+          </div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+            Hệ thống Theo dõi, Đánh giá & Xếp hạng Kết quả Cải cách hành chính (<span id="hero-active-year-label">Năm 2026</span>)
+          </h1>
+          <div class="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+            <span>Căn cứ Phụ lục II - Quyết định số 2851/QĐ-UBND</span>
+            <span aria-hidden="true">·</span>
+            <span id="firebase-sync-label" class="font-medium text-emerald-300">
+              Đang kết nối cơ sở dữ liệu Cloud Firestore...
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <!-- Chọn Năm chấm điểm -->
+          <div class="flex items-center gap-2 bg-slate-800/90 border border-slate-600 rounded-xl px-3 py-2">
+            <label for="header-year-select" class="text-xs font-semibold text-blue-200 whitespace-nowrap">
+              Năm chấm điểm:
+            </label>
+            <select
+              id="header-year-select"
+              aria-label="Chọn năm chấm điểm"
+              class="bg-transparent text-xs font-extrabold text-white focus:outline-none cursor-pointer font-mono tabular-nums"
+            >
+              <option value="2026" class="text-slate-900">Năm 2026</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            id="btn-export-csv"
+            class="px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-xl shadow-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Xuất Bảng điểm (.CSV)
+          </button>
+          <button
+            type="button"
+            id="btn-seed-reset"
+            class="px-3.5 py-2 text-xs font-semibold text-blue-100 bg-blue-900/70 hover:bg-blue-800 border border-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Đặt lại Bảng điểm (0đ)
+          </button>
+        </div>
+      </section>
+
+      <!-- KPI STRIP (4 Elevated Tactile Metric Cards) -->
+      <section aria-label="Chỉ số tổng hợp PAR Index" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print">
+        <!-- Card 1: Điểm chuẩn 8 lĩnh vực -->
+        <div class="kpi-card-blue p-5">
+          <div class="text-xs font-bold text-blue-900">
+            1. Tổng điểm chuẩn (Mục I – VIII)
+          </div>
+          <div
+            id="kpi-base-score"
+            class="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-slate-900 mt-1.5 whitespace-nowrap"
+          >
+            0,00 / 100,00
+          </div>
+          <div id="kpi-base-sub" class="text-xs text-slate-600 mt-1.5">
+            Đã chấm 0/84 tiêu chí · Đạt tối đa 0 tiêu chí
+          </div>
+        </div>
+
+        <!-- Card 2: Điểm thưởng & Điểm trừ (Mục IX) -->
+        <div class="kpi-card-amber p-5">
+          <div class="text-xs font-bold text-amber-900">
+            2. Điểm thưởng & Điểm trừ (Mục IX)
+          </div>
+          <div class="flex items-baseline justify-between gap-3 mt-1.5">
+            <div class="whitespace-nowrap">
+              <span class="text-xs text-slate-600">Thưởng: </span>
+              <span
+                id="kpi-bonus-score"
+                class="text-xl font-extrabold font-mono tabular-nums text-emerald-700"
+              >
+                +0,00đ
+              </span>
+            </div>
+            <div class="whitespace-nowrap">
+              <span class="text-xs text-slate-600">Trừ: </span>
+              <span
+                id="kpi-penalty-score"
+                class="text-xl font-extrabold font-mono tabular-nums text-emerald-700"
+              >
+                -0,00đ
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-slate-600 mt-2">
+            Tối đa +10,00đ thưởng · Tối đa -10,00đ trừ
+          </div>
+        </div>
+
+        <!-- Card 3: Tổng điểm CCHC cuối cùng & Xếp hạng -->
+        <div class="kpi-card-emerald p-5">
+          <div class="text-xs font-bold text-emerald-950">
+            3. Tổng điểm CCHC & Xếp loại
+          </div>
+          <div class="flex items-baseline gap-2 mt-1.5">
+            <span
+              id="kpi-final-score"
+              class="text-3xl font-extrabold font-mono tabular-nums text-emerald-800"
+            >
+              0,00
+            </span>
+            <span class="text-xs font-semibold text-slate-500">điểm</span>
+          </div>
+          <div id="kpi-final-grade" class="text-xs text-slate-600 font-semibold mt-1.5">
+            Chưa xếp loại · Bắt đầu chấm điểm để tính kết quả
+          </div>
+        </div>
+
+        <!-- Card 4: Tỷ lệ hoàn thành Hồ sơ kiểm chứng -->
+        <div class="kpi-card-teal p-5">
+          <div class="text-xs font-bold text-teal-950">
+            4. Tỷ lệ Hồ sơ Minh chứng hợp lệ
+          </div>
+          <div
+            id="kpi-evidence-rate"
+            class="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-teal-800 mt-1.5"
+          >
+            0%
+          </div>
+          <div id="kpi-evidence-sub" class="text-xs text-slate-600 mt-1.5">
+            0/99 tiêu chí đã đính kèm văn bản kiểm chứng
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 1: DASHBOARD TỔNG QUAN & BIỂU ĐỒ TRỰC QUAN HÓA SỐ LIỆU         -->
+      <!-- =================================================================== -->
+      <div id="view-dashboard" class="space-y-6">
+        <!-- Hàng 1: 2 Biểu đồ trực quan hóa số liệu -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 surface-elevated p-5 flex flex-col">
+            <div class="mb-3">
+              <h2 class="text-base font-extrabold text-slate-900">
+                Biểu đồ Radar: Tỷ lệ đạt điểm & Minh chứng 8 Lĩnh vực
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Đối chiếu tỷ lệ % điểm tự chấm và tỷ lệ hoàn thành hồ sơ kiểm chứng theo QĐ 2851/QĐ-UBND
+              </p>
+            </div>
+            <div class="relative flex-1 min-h-[320px]">
+              <canvas id="chart-radar-domains"></canvas>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 surface-elevated p-5 flex flex-col">
+            <div class="mb-3">
+              <h2 class="text-base font-extrabold text-slate-900">
+                Biểu đồ Cột ngang: Điểm tự chấm so với Điểm tối đa từng Lĩnh vực
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Phân tích khoảng cách điểm số thực tế tại 8 lĩnh vực chuẩn (Thang điểm chuẩn 100,00 điểm)
+              </p>
+            </div>
+            <div class="relative flex-1 min-h-[320px]">
+              <canvas id="chart-bar-domains"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Hàng 2: Ma trận 9 Lĩnh vực CCHC -->
+        <section class="surface-elevated p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">
+                Ma trận Kết quả 9 Lĩnh vực Cải cách hành chính (Phụ lục II - QĐ 2851/QĐ-UBND)
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Nhấn vào từng thẻ lĩnh vực để lọc và chấm điểm chi tiết các tiêu chí thành phần
+              </p>
+            </div>
+            <div class="text-xs text-slate-500 font-medium">
+              8 lĩnh vực chuẩn (100đ) · Mục IX Điểm thưởng (+10đ) & Điểm trừ (-10đ)
+            </div>
+          </div>
+
+          <div
+            id="domain-summary-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          ></div>
+        </section>
+
+        <!-- Hàng 3: Bảng Cảnh báo Rủi ro Mất điểm & Thiếu minh chứng -->
+        <section class="surface-elevated overflow-hidden">
+          <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/70">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">
+                Danh sách Cảnh báo Rủi ro Mất điểm & Điểm nghẽn cần khắc phục
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Tự động phát hiện các tiêu chí đã chấm nhưng chưa đạt điểm tối đa, thiếu hồ sơ minh chứng hoặc phát sinh điểm trừ
+              </p>
+            </div>
+            <span id="risk-count-label" class="text-xs font-bold text-slate-700 font-mono tabular-nums">
+              0 tiêu chí cảnh báo
+            </span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/80 border-b border-slate-200 text-xs font-bold text-slate-600">
+                  <th class="py-3 px-4 w-24">Mã TC</th>
+                  <th class="py-3 px-4">Nội dung Tiêu chí & Nguyên nhân mất điểm / Rủi ro</th>
+                  <th class="py-3 px-4 w-52">Đơn vị chủ trì</th>
+                  <th class="py-3 px-4 text-right w-28">Điểm tự chấm</th>
+                  <th class="py-3 px-4 text-right w-28">Điểm hụt / Trừ</th>
+                  <th class="py-3 px-4 text-right w-32">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="risk-warnings-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 2: BẢNG CHẤM ĐIỂM & HỒ SƠ MINH CHỨNG                          -->
+      <!-- =================================================================== -->
+      <div id="view-scoring" class="hidden space-y-5">
+        <!-- Thanh công cụ Lọc đa chiều -->
+        <section class="surface-elevated p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">
+                Bảng Tự đánh giá, Chấm điểm & Quản lý Hồ sơ Minh chứng CCHC
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Tích hợp cơ chế tính điểm tự động theo quy định của Quyết định số 2851/QĐ-UBND và tải file minh chứng lên Google Drive
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span
+                id="scoring-filter-count"
+                class="text-xs font-bold text-blue-900 font-mono tabular-nums"
+              >
+                Hiển thị 99 tiêu chí
+              </span>
+              <button
+                type="button"
+                id="btn-reset-filters"
+                class="btn-tactile-secondary px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer"
+              >
+                Xóa bộ lọc
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <label for="filter-domain" class="block text-xs font-semibold text-slate-700 mb-1">
+                Lĩnh vực CCHC (Mục I – IX)
+              </label>
+              <select
+                id="filter-domain"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-700"
+              >
+                <option value="ALL">Tất cả 9 lĩnh vực (100đ + Thưởng/Trừ)</option>
+                <option value="I">Mục I. Công tác chỉ đạo, điều hành (27,0đ)</option>
+                <option value="II">Mục II. Cải cách thể chế (4,0đ)</option>
+                <option value="III">Mục III. Cải cách thủ tục hành chính (11,0đ)</option>
+                <option value="IV">Mục IV. Cải cách tổ chức bộ máy (9,0đ)</option>
+                <option value="V">Mục V. Cải cách chế độ công vụ (12,0đ)</option>
+                <option value="VI">Mục VI. Cải cách tài chính công (9,0đ)</option>
+                <option value="VII">Mục VII. Chuyển đổi số trong CQNN (20,0đ)</option>
+                <option value="VIII">Mục VIII. Hiệu quả tác động CCHC (8,0đ)</option>
+                <option value="IX">Mục IX. Điểm thưởng (+10đ) & Điểm trừ (-10đ)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="filter-dept" class="block text-xs font-semibold text-slate-700 mb-1">
+                Cơ quan, đơn vị phụ trách
+              </label>
+              <select
+                id="filter-dept"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-700"
+              >
+                <option value="ALL">Tất cả 5 phòng, trung tâm chuyên môn</option>
+                <option value="Phòng Văn hóa – Xã hội phường">Phòng Văn hóa – Xã hội phường</option>
+                <option value="Văn phòng HĐND-UBND phường">Văn phòng HĐND-UBND phường</option>
+                <option value="Trung tâm Phục vụ hành chính công phường">Trung tâm Phục vụ hành chính công phường</option>
+                <option value="Phòng Kinh tế, Hạ tầng và Đô thị phường">Phòng Kinh tế, Hạ tầng và Đô thị phường</option>
+                <option value="Trung tâm Cung ứng dịch vụ sự nghiệp công phường">Trung tâm Cung ứng dịch vụ sự nghiệp công phường</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="filter-status" class="block text-xs font-semibold text-slate-700 mb-1">
+                Trạng thái thẩm định & Rủi ro
+              </label>
+              <select
+                id="filter-status"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-700"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chưa chấm điểm (0đ)</option>
+                <option value="RISK">Đang hụt điểm / Cảnh báo rủi ro</option>
+                <option value="MISSING_EVIDENCE">Chưa đính kèm hồ sơ minh chứng</option>
+                <option value="COMPLETED">Đã đạt điểm tối đa & Đủ minh chứng</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="filter-search" class="block text-xs font-semibold text-slate-700 mb-1">
+                Tìm kiếm theo Mã hoặc Tên tiêu chí
+              </label>
+              <input
+                type="search"
+                id="filter-search"
+                placeholder="Nhập mã (VD: I.4.c, VII.2) hoặc từ khóa..."
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-700"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- Bảng danh sách Tiêu chí chấm điểm -->
+        <section class="surface-elevated overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/90 border-b border-slate-200 text-xs font-bold text-slate-600">
+                  <th class="py-3 px-4 w-24">Mã TC</th>
+                  <th class="py-3 px-4">Nội dung Tiêu chí, Quy định chấm điểm & Cảnh báo</th>
+                  <th class="py-3 px-4 w-48">Đơn vị chủ trì & Hạn</th>
+                  <th class="py-3 px-4 text-right w-24">Điểm chuẩn</th>
+                  <th class="py-3 px-4 text-right w-24">Tự chấm</th>
+                  <th class="py-3 px-4 w-44">Hồ sơ kiểm chứng</th>
+                  <th class="py-3 px-4 w-36">Trạng thái</th>
+                  <th class="py-3 px-4 text-right w-28">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="scoring-criteria-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 3: THEO DÕI TIẾN ĐỘ PHÒNG BAN, ĐƠN VỊ                         -->
+      <!-- =================================================================== -->
+      <div id="view-units" class="hidden space-y-6">
+        <!-- Mốc thời gian trọng tâm theo QĐ 2851/QĐ-UBND -->
+        <section class="surface-elevated p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">
+                Các Mốc thời gian Kiểm soát Chất lượng theo Quyết định số 2851/QĐ-UBND
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Các mốc hạn định bắt buộc tại Phụ lục II - QĐ 2851/QĐ-UBND làm căn cứ thẩm định điểm số CCHC trong năm
+              </p>
+            </div>
+          </div>
+
+          <div
+            id="milestones-2851-grid"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          ></div>
+        </section>
+
+        <!-- Biểu đồ So sánh Tiến độ Điểm số & Minh chứng của 5 Phòng, Trung tâm -->
+        <section class="surface-elevated p-6">
+          <div class="mb-4">
+            <h2 class="text-base font-extrabold text-slate-900">
+              Biểu đồ So sánh Tỷ lệ Đạt điểm & Hoàn thành Minh chứng theo Đơn vị Chủ trì
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tổng hợp trực tiếp từ kết quả chấm điểm của 5 phòng chuyên môn và trung tâm thuộc UBND phường Hội An Đông
+            </p>
+          </div>
+          <div class="relative h-[300px]">
+            <canvas id="chart-bar-depts"></canvas>
+          </div>
+        </section>
+
+        <!-- Thẻ chi tiết 5 Đơn vị chuyên môn -->
+        <section class="space-y-3">
+          <h2 class="text-base font-extrabold text-slate-900">
+            Phân công Trách nhiệm & Kết quả Thực hiện của 5 Cơ quan, Đơn vị thuộc Phường
+          </h2>
+          <div
+            id="dept-cards-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          ></div>
+        </section>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 4: CƠ CHẾ BÁO CÁO & BIỂU MẪU TỰ CHẤM ĐIỂM CHUẨN HÀNH CHÍNH A4 -->
+      <!-- =================================================================== -->
+      <div id="view-reports" class="hidden space-y-6">
+        <section class="surface-elevated p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">
+              Cơ chế Xuất Báo cáo Tự đánh giá CCHC (Trình Lãnh đạo UBND Phường)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tổng hợp số liệu thực tế theo Phụ lục II - Quyết định số 2851/QĐ-UBND của Chủ tịch UBND thành phố Đà Nẵng
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              id="btn-export-csv-report"
+              class="btn-tactile-secondary px-4 py-2 text-xs font-bold rounded-lg cursor-pointer"
+            >
+              Xuất File Excel (.CSV)
+            </button>
+            <button
+              type="button"
+              id="btn-print-report"
+              class="btn-tactile-primary px-4 py-2 text-xs font-bold rounded-lg cursor-pointer"
+            >
+              In Báo cáo / Lưu PDF (Chuẩn A4)
+            </button>
+          </div>
+        </section>
+
+        <div id="official-report-preview"></div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 5: CÀI ĐẶT HỆ THỐNG (ĐĂNG NHẬP MẬT KHẨU: tsvmmm)               -->
+      <!-- =================================================================== -->
+      <div id="view-settings" class="hidden space-y-6 no-print">
+        <!-- Màn hình Khóa mật khẩu Quản trị -->
+        <section
+          id="settings-lock-panel"
+          class="surface-elevated max-w-lg mx-auto p-8 my-8 space-y-5"
+        >
+          <div class="space-y-1.5 text-center">
+            <div class="text-xs font-extrabold text-blue-900 tracking-wide uppercase">
+              Khu vực Quản trị Hệ thống CCHC
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-900">
+              Đăng nhập Cài đặt Hệ thống
+            </h2>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Vui lòng nhập mật khẩu quản trị để thực hiện sao lưu/khôi phục dữ liệu, tạo mới năm chấm điểm, thêm/sửa/xóa tiêu chí và cấu hình tải file minh chứng lên Google Drive.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label for="input-admin-password" class="block text-xs font-bold text-slate-700 mb-1.5">
+                Mật khẩu quản trị hệ thống *
+              </label>
+              <input
+                type="password"
+                id="input-admin-password"
+                placeholder="Nhập mật khẩu quản trị..."
+                autocomplete="current-password"
+                class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-blue-700 focus:bg-white font-mono"
+              />
+            </div>
+
+            <div
+              id="settings-auth-error"
+              class="hidden p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-800"
+            ></div>
+
+            <button
+              type="button"
+              id="btn-unlock-settings"
+              class="btn-tactile-primary w-full py-2.5 px-4 text-sm font-bold rounded-xl cursor-pointer"
+            >
+              Đăng nhập Quản trị Hệ thống
+            </button>
+          </div>
+        </section>
+
+        <!-- Màn hình Quản trị Hệ thống sau khi đăng nhập thành công -->
+        <div id="settings-unlocked-panel" class="hidden space-y-6">
+          <!-- Thanh trạng thái Quản trị -->
+          <section class="surface-elevated p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-50/80 via-white to-slate-50">
+            <div>
+              <div class="text-xs font-bold text-blue-900">
+                CHẾ ĐỘ QUẢN TRỊ VIÊN ĐANG HOẠT ĐỘNG
+              </div>
+              <h2 class="text-lg font-extrabold text-slate-900 mt-0.5">
+                Trung tâm Cài đặt & Cấu hình Hệ thống CCHC Phường Hội An Đông
+              </h2>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Quản lý năm chấm điểm, cấu hình Google Apps Script tải file lên Google Drive, sao lưu/khôi phục dữ liệu và chỉnh sửa danh mục tiêu chí
+              </p>
+            </div>
+            <button
+              type="button"
+              id="btn-lock-settings"
+              class="btn-tactile-secondary px-4 py-2 text-xs font-bold text-rose-800 rounded-xl whitespace-nowrap cursor-pointer"
+            >
+              Đăng xuất / Khóa Cài đặt
+            </button>
+          </section>
+
+          <!-- Hàng 1: (1) Thiết lập Năm chấm điểm & (2) Sao lưu / Khôi phục dữ liệu -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Khối 1: Thiết lập & Tạo mới Năm chấm điểm -->
+            <section class="surface-elevated p-6 space-y-4 flex flex-col justify-between">
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-base font-extrabold text-slate-900">
+                    1. Thiết lập & Tạo mới Năm chấm điểm
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Chuyển đổi giữa các năm đánh giá hoặc khởi tạo bảng chấm điểm cho năm mới
+                  </p>
+                </div>
+
+                <div>
+                  <div class="text-xs font-bold text-slate-700 mb-2">
+                    Danh sách các năm chấm điểm trên hệ thống:
+                  </div>
+                  <div id="settings-years-list" class="space-y-2"></div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 pt-4">
+                <div class="text-xs font-bold text-slate-800">
+                  Khởi tạo Năm chấm điểm mới:
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label for="input-new-year" class="block text-xs font-semibold text-slate-600 mb-1">
+                      Nhập năm mới (VD: 2027) *
+                    </label>
+                    <input
+                      type="number"
+                      id="input-new-year"
+                      min="2020"
+                      max="2050"
+                      value="2027"
+                      class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg font-mono tabular-nums text-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label for="select-new-year-mode" class="block text-xs font-semibold text-slate-600 mb-1">
+                      Nguồn khung tiêu chí
+                    </label>
+                    <select
+                      id="select-new-year-mode"
+                      class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900"
+                    >
+                      <option value="clone">Sao chép khung tiêu chí năm hiện hành (Reset 0đ)</option>
+                      <option value="standard">Khung tiêu chí chuẩn QĐ 2851 gốc (Reset 0đ)</option>
+                    </select>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="btn-create-year"
+                  class="btn-tactile-primary w-full py-2 px-4 text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  + Tạo mới & Chuyển sang Năm chấm điểm này
+                </button>
+              </div>
+            </section>
+
+            <!-- Khối 2: Sao lưu & Khôi phục dữ liệu (Backup & Restore) -->
+            <section class="surface-elevated p-6 space-y-4 flex flex-col justify-between">
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-base font-extrabold text-slate-900">
+                    2. Sao lưu & Khôi phục Dữ liệu Hệ thống
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Xuất toàn bộ dữ liệu các năm, điểm tự chấm, hồ sơ minh chứng và cấu hình ra tệp JSON an toàn hoặc khôi phục lại khi cần
+                  </p>
+                </div>
+
+                <div class="p-4 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2.5">
+                  <div class="text-xs font-bold text-blue-950">
+                    Sao lưu toàn bộ dữ liệu (Full Backup .JSON)
+                  </div>
+                  <p id="backup-stats-summary" class="text-xs text-slate-600">
+                    Bao gồm toàn bộ các năm chấm điểm, danh mục tiêu chí, điểm số, văn bản minh chứng và thông số Google Drive.
+                  </p>
+                  <button
+                    type="button"
+                    id="btn-export-backup-json"
+                    class="btn-tactile-primary px-4 py-2 text-xs font-bold rounded-lg cursor-pointer"
+                  >
+                    Tải xuống Tệp Sao lưu (.JSON)
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div class="text-xs font-bold text-slate-800">
+                  Khôi phục dữ liệu từ tệp Sao lưu (.JSON):
+                </div>
+                <div>
+                  <label for="input-restore-backup-file" class="block text-xs text-slate-600 mb-1">
+                    Chọn tệp sao lưu (.json) từ máy tính
+                  </label>
+                  <input
+                    type="file"
+                    id="input-restore-backup-file"
+                    accept=".json,application/json"
+                    class="w-full text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-300 file:text-xs file:font-semibold file:bg-white file:text-slate-800 hover:file:bg-slate-100 cursor-pointer"
+                  />
+                </div>
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    id="btn-restore-backup"
+                    class="btn-tactile-secondary px-4 py-2 text-xs font-bold text-blue-950 rounded-lg cursor-pointer"
+                  >
+                    Khôi phục từ tệp đã chọn
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-seed-reset-settings"
+                    class="px-3.5 py-2 text-xs font-semibold text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Đặt lại năm hiện hành về 0 điểm
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Hàng 2: Khối 3 - Cài đặt thông số tải file minh chứng lên Google Drive qua Google Apps Script -->
+          <section class="surface-elevated p-6 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900">
+                  3. Cài đặt Thông số Tải File Minh chứng lên Google Drive (Google Apps Script)
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  Kết nối trực tiếp biểu mẫu chấm điểm với thư mục Google Drive của UBND phường thông qua Web App Google Apps Script
+                </p>
+              </div>
+              <button
+                type="button"
+                id="btn-copy-gas-code"
+                class="btn-tactile-secondary px-3.5 py-2 text-xs font-bold text-blue-900 rounded-lg whitespace-nowrap cursor-pointer"
+              >
+                Sao chép mã Google Apps Script (Code.gs)
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-2">
+                <label for="input-gas-webapp-url" class="block text-xs font-bold text-slate-700 mb-1">
+                  URL Web App Google Apps Script (Kết thúc bằng /exec) *
+                </label>
+                <input
+                  type="url"
+                  id="input-gas-webapp-url"
+                  placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                  class="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 font-mono focus:outline-none focus:border-blue-700"
+                />
+              </div>
+
+              <div>
+                <label for="input-drive-folder-id" class="block text-xs font-bold text-slate-700 mb-1">
+                  ID Thư mục Google Drive gốc (hoặc dán Link thư mục)
+                </label>
+                <input
+                  type="text"
+                  id="input-drive-folder-id"
+                  placeholder="VD: 1A2b3C4d5E6f7G8h9I0j..."
+                  class="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 font-mono focus:outline-none focus:border-blue-700"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div class="md:col-span-2">
+                <label for="input-drive-folder-url" class="block text-xs font-bold text-slate-700 mb-1">
+                  Đường dẫn mở nhanh Thư mục Google Drive chứa Minh chứng (Tùy chọn)
+                </label>
+                <input
+                  type="url"
+                  id="input-drive-folder-url"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  class="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-700"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  id="btn-save-drive-config"
+                  class="btn-tactile-primary flex-1 py-2 px-4 text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  Lưu cấu hình Drive
+                </button>
+                <button
+                  type="button"
+                  id="btn-test-gas-config"
+                  class="btn-tactile-secondary py-2 px-3.5 text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  Kiểm tra kết nối
+                </button>
+              </div>
+            </div>
+
+            <!-- Hướng dẫn & Mã nguồn mẫu Google Apps Script -->
+            <details class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs">
+              <summary class="font-bold text-slate-800 cursor-pointer select-none">
+                Xem hướng dẫn thiết lập và mã nguồn Google Apps Script (Code.gs) để tự động nhận file minh chứng
+              </summary>
+              <div class="mt-3 space-y-2 text-slate-600">
+                <p>
+                  1. Mở <a href="https://script.google.com" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline font-semibold">https://script.google.com</a>, tạo dự án mới và dán đoạn mã dưới đây vào tệp <span class="font-mono font-semibold">Code.gs</span>.
+                </p>
+                <p>
+                  2. Nhấn <strong>Triển khai (Deploy) &rarr; Tùy chọn triển khai mới (New deployment) &rarr; Ứng dụng web (Web app)</strong>. Chọn <em>Thực thi dưới dạng: Tôi (Me)</em> và <em>Ai có quyền truy cập: Bất kỳ ai (Anyone)</em>.
+                </p>
+                <p>
+                  3. Sao chép đường dẫn <strong>URL ứng dụng web (/exec)</strong> dán vào ô phía trên và bấm <strong>Lưu cấu hình Drive</strong>.
+                </p>
+                <pre
+                  id="gas-code-preview"
+                  class="mt-2 p-3 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto font-mono text-[11px] leading-relaxed"
+                ></pre>
+              </div>
+            </details>
+          </section>
+
+          <!-- Hàng 3: Khối 4 - Quản trị Bộ tiêu chí (Thêm / Chỉnh sửa / Xóa tiêu chí) -->
+          <section class="surface-elevated overflow-hidden">
+            <div class="p-5 border-b border-slate-200 bg-slate-50/70 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900">
+                  4. Quản trị Danh mục Tiêu chí CCHC (Thêm mới / Chỉnh sửa / Xóa tiêu chí)
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  Tùy chỉnh nội dung, điểm tối đa, phương pháp tính điểm, đơn vị chủ trì hoặc bổ sung tiêu chí mới cho năm đang chọn
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <select
+                  id="settings-crit-domain-filter"
+                  aria-label="Lọc tiêu chí theo lĩnh vực trong cài đặt"
+                  class="px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900"
+                >
+                  <option value="ALL">Tất cả 9 lĩnh vực</option>
+                  <option value="I">Mục I. Chỉ đạo, điều hành</option>
+                  <option value="II">Mục II. Cải cách thể chế</option>
+                  <option value="III">Mục III. Thủ tục hành chính</option>
+                  <option value="IV">Mục IV. Tổ chức bộ máy</option>
+                  <option value="V">Mục V. Chế độ công vụ</option>
+                  <option value="VI">Mục VI. Tài chính công</option>
+                  <option value="VII">Mục VII. Chuyển đổi số</option>
+                  <option value="VIII">Mục VIII. Hiệu quả tác động</option>
+                  <option value="IX">Mục IX. Điểm thưởng & Điểm trừ</option>
+                </select>
+                <input
+                  type="search"
+                  id="settings-crit-search"
+                  placeholder="Tìm mã hoặc tên tiêu chí..."
+                  class="px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 w-56"
+                />
+                <button
+                  type="button"
+                  id="btn-open-add-criterion"
+                  class="btn-tactile-primary px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap cursor-pointer"
+                >
+                  + Thêm tiêu chí mới
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[600px]">
+              <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-slate-100 border-b border-slate-200 z-10">
+                  <tr class="text-xs font-bold text-slate-600">
+                    <th class="py-3 px-4 w-24">Mã TC</th>
+                    <th class="py-3 px-4 w-24">Lĩnh vực</th>
+                    <th class="py-3 px-4">Tên tiêu chí & Quy định chấm điểm</th>
+                    <th class="py-3 px-4 text-right w-24">Điểm chuẩn</th>
+                    <th class="py-3 px-4 w-32">Phương pháp</th>
+                    <th class="py-3 px-4 w-48">Đơn vị chủ trì</th>
+                    <th class="py-3 px-4 text-right w-36">Quản trị</th>
+                  </tr>
+                </thead>
+                <tbody id="settings-criteria-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 px-6 mt-12 no-print">
+      <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+        <div>
+          Hệ thống Quản lý, Theo dõi, Tự đánh giá và Xếp hạng Kết quả CCHC (PAR Index) — UBND Phường Hội An Đông
+        </div>
+        <div>
+          Căn cứ Phụ lục II - Quyết định số 2851/QĐ-UBND ngày 30/6/2026 của Chủ tịch UBND TP Đà Nẵng
+        </div>
+      </div>
+    </footer>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: CHẤM ĐIỂM & CẬP NHẬT HỒ SƠ KIỂM CHỨNG                      -->
+    <!-- =================================================================== -->
+    <div
+      id="criterion-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-criterion-title"
+      aria-hidden="true"
+      class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4 overflow-y-auto no-print"
+    >
+      <div class="bg-white border border-slate-300 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-start justify-between gap-4">
+          <div>
+            <div id="modal-criterion-code" class="font-mono text-xs font-extrabold text-blue-900 uppercase">
+              Tiêu chí I.1.a
+            </div>
+            <h3 id="modal-criterion-title" class="text-base font-extrabold text-slate-900 mt-0.5">
+              Tên tiêu chí
+            </h3>
+          </div>
+          <button
+            type="button"
+            id="btn-close-modal"
+            aria-label="Đóng hộp thoại chấm điểm"
+            class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto space-y-5 flex-1">
+          <!-- Nguyên văn quy định QĐ 2851 & Cảnh báo thẩm định -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+            <div>
+              <span class="font-bold text-slate-900">Quy định chấm điểm (Phụ lục II - QĐ 2851/QĐ-UBND): </span>
+              <span id="modal-criterion-reg" class="text-slate-700 leading-relaxed"></span>
+            </div>
+            <div class="pt-2 border-t border-slate-200">
+              <span class="font-bold text-amber-900">Lưu ý kiểm soát & Hướng dẫn thẩm định: </span>
+              <span id="modal-criterion-warning" class="text-amber-900 leading-relaxed"></span>
+            </div>
+          </div>
+
+          <!-- Khu vực tính điểm thông minh OOP -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold uppercase text-slate-700">
+                1. Thông số đầu vào & Tự động tính điểm
+              </span>
+              <div class="text-sm font-extrabold text-blue-900 font-mono tabular-nums">
+                Kết quả tính điểm: <span id="modal-preview-score">0,00 / 0,00 điểm</span>
+              </div>
+            </div>
+            <div id="modal-dynamic-inputs"></div>
+            <div
+              id="modal-dynamic-calc-warning"
+              class="hidden p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-900"
+            ></div>
+          </div>
+
+          <!-- Đơn vị phụ trách & Trạng thái -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="modal-assigned-dept" class="block text-xs font-bold text-slate-700 mb-1">
+                Đơn vị chủ trì phụ trách
+              </label>
+              <select
+                id="modal-assigned-dept"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="Phòng Văn hóa – Xã hội phường">Phòng Văn hóa – Xã hội phường</option>
+                <option value="Văn phòng HĐND-UBND phường">Văn phòng HĐND-UBND phường</option>
+                <option value="Trung tâm Phục vụ hành chính công phường">Trung tâm Phục vụ hành chính công phường</option>
+                <option value="Phòng Kinh tế, Hạ tầng và Đô thị phường">Phòng Kinh tế, Hạ tầng và Đô thị phường</option>
+                <option value="Trung tâm Cung ứng dịch vụ sự nghiệp công phường">Trung tâm Cung ứng dịch vụ sự nghiệp công phường</option>
+              </select>
+            </div>
+            <div>
+              <label for="modal-status" class="block text-xs font-bold text-slate-700 mb-1">
+                Trạng thái thực hiện
+              </label>
+              <select
+                id="modal-status"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="pending">Chưa chấm điểm</option>
+                <option value="in_progress">Đang thực hiện / Rà soát</option>
+                <option value="completed">Đã hoàn thành & Đủ hồ sơ</option>
+                <option value="warning">Nguy cơ mất điểm / Cần bổ sung</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quản lý danh sách Tài liệu kiểm chứng -->
+          <div class="space-y-3 pt-2 border-t border-slate-200">
+            <div class="text-xs font-extrabold uppercase text-slate-700">
+              2. Hồ sơ, Tài liệu Kiểm chứng đính kèm
+            </div>
+            <div id="modal-evidence-list" class="space-y-2"></div>
+
+            <!-- Form thêm văn bản kiểm chứng mới & Tải file lên Google Drive qua GAS -->
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="text-xs font-bold text-slate-800">
+                  Thêm văn bản / tài liệu kiểm chứng mới:
+                </div>
+                <!-- Khu vực tải file trực tiếp lên Google Drive qua GAS -->
+                <div class="flex items-center gap-2">
+                  <input
+                    type="file"
+                    id="input-ev-file-upload"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip"
+                    class="text-[11px] text-slate-600 max-w-[200px] file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border file:border-blue-300 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    id="btn-upload-ev-drive"
+                    class="px-3 py-1 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-600 rounded-md transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Tải lên Drive (GAS)
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label for="new-ev-docnum" class="block text-xs text-slate-600 mb-1">
+                    Số ký hiệu văn bản *
+                  </label>
+                  <input
+                    type="text"
+                    id="new-ev-docnum"
+                    placeholder="VD: 45/KH-UBND hoặc 12/BC-UBND"
+                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label for="new-ev-date" class="block text-xs text-slate-600 mb-1">
+                    Ngày ban hành
+                  </label>
+                  <input
+                    type="date"
+                    id="new-ev-date"
+                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label for="new-ev-url" class="block text-xs text-slate-600 mb-1">
+                    Link file Google Drive / Hệ thống
+                  </label>
+                  <input
+                    type="url"
+                    id="new-ev-url"
+                    placeholder="https://drive.google.com/..."
+                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                <div class="flex-1">
+                  <label for="new-ev-summary" class="block text-xs text-slate-600 mb-1">
+                    Trích yếu nội dung văn bản / tài liệu kiểm chứng *
+                  </label>
+                  <input
+                    type="text"
+                    id="new-ev-summary"
+                    placeholder="Nhập trích yếu văn bản hoặc mô tả minh chứng..."
+                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg"
+                  />
+                </div>
+                <button
+                  type="button"
+                  id="btn-add-evidence"
+                  class="btn-tactile-secondary px-4 py-1.5 text-xs font-bold text-blue-900 rounded-lg whitespace-nowrap cursor-pointer"
+                >
+                  + Đính kèm vào danh sách
+                </button>
+              </div>
+              <div id="new-ev-error" class="hidden text-xs font-medium text-rose-700"></div>
+            </div>
+          </div>
+
+          <!-- Ghi chú giải trình thẩm định -->
+          <div>
+            <label for="modal-notes" class="block text-xs font-bold text-slate-700 mb-1">
+              3. Ghi chú giải trình thẩm định của đơn vị
+            </label>
+            <textarea
+              id="modal-notes"
+              rows="2"
+              placeholder="Nhập nội dung giải trình số liệu hoặc tiến độ thực hiện..."
+              class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-900"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            id="btn-cancel-modal"
+            class="btn-tactile-secondary px-4 py-2 text-xs font-bold rounded-lg cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            id="btn-save-criterion"
+            class="btn-tactile-primary px-5 py-2 text-xs font-bold rounded-lg cursor-pointer"
+          >
+            Lưu điểm & Minh chứng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: THÊM MỚI / CHỈNH SỬA TIÊU CHÍ (QUẢN TRỊ HỆ THỐNG)          -->
+    <!-- =================================================================== -->
+    <div
+      id="criterion-crud-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="crud-modal-heading"
+      aria-hidden="true"
+      class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4 overflow-y-auto no-print"
+    >
+      <div class="bg-white border border-slate-300 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4">
+          <h3 id="crud-modal-heading" class="text-base font-extrabold text-slate-900">
+            Thêm mới / Chỉnh sửa Tiêu chí CCHC
+          </h3>
+          <button
+            type="button"
+            id="btn-close-crud-modal"
+            aria-label="Đóng hộp thoại thiết lập tiêu chí"
+            class="px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-lg cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+          <input type="hidden" id="crud-crit-original-id" value="" />
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="crud-crit-code" class="block font-bold text-slate-700 mb-1">
+                Mã tiêu chí *
+              </label>
+              <input
+                type="text"
+                id="crud-crit-code"
+                placeholder="VD: I.8 hoặc VII.9"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono text-slate-900"
+              />
+            </div>
+            <div>
+              <label for="crud-crit-domain" class="block font-bold text-slate-700 mb-1">
+                Lĩnh vực (Mục I – IX) *
+              </label>
+              <select
+                id="crud-crit-domain"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="I">Mục I. Chỉ đạo, điều hành</option>
+                <option value="II">Mục II. Cải cách thể chế</option>
+                <option value="III">Mục III. Thủ tục hành chính</option>
+                <option value="IV">Mục IV. Tổ chức bộ máy</option>
+                <option value="V">Mục V. Chế độ công vụ</option>
+                <option value="VI">Mục VI. Tài chính công</option>
+                <option value="VII">Mục VII. Chuyển đổi số</option>
+                <option value="VIII">Mục VIII. Hiệu quả tác động</option>
+                <option value="IX">Mục IX. Điểm thưởng / Điểm trừ</option>
+              </select>
+            </div>
+            <div>
+              <label for="crud-crit-subgroup" class="block font-bold text-slate-700 mb-1">
+                Phân nhóm tính điểm
+              </label>
+              <select
+                id="crud-crit-subgroup"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="standard">Tiêu chí chuẩn (Mục I–VIII)</option>
+                <option value="bonus">Tiêu chí Điểm thưởng (Mục IX)</option>
+                <option value="penalty">Hành vi Điểm trừ (Mục IX)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="crud-crit-maxscore" class="block font-bold text-slate-700 mb-1">
+                Điểm tối đa (hoặc mức trừ) *
+              </label>
+              <input
+                type="number"
+                id="crud-crit-maxscore"
+                step="0.25"
+                min="0"
+                max="50"
+                value="1.0"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono tabular-nums text-slate-900"
+              />
+            </div>
+            <div>
+              <label for="crud-crit-type" class="block font-bold text-slate-700 mb-1">
+                Phương pháp tính điểm
+              </label>
+              <select
+                id="crud-crit-type"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="boolean">Đạt / Không đạt (Boolean)</option>
+                <option value="tiered">Bậc thang định mức (Tiered)</option>
+                <option value="formula">Công thức tỷ lệ % (Formula)</option>
+                <option value="checklist">Danh mục thành phần (Checklist)</option>
+                <option value="penalty">Cảnh báo Điểm trừ (Penalty)</option>
+              </select>
+            </div>
+            <div>
+              <label for="crud-crit-deadline" class="block font-bold text-slate-700 mb-1">
+                Thời hạn hoàn thành
+              </label>
+              <input
+                type="text"
+                id="crud-crit-deadline"
+                placeholder="VD: Năm 2026 hoặc 30/11/2026"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="crud-crit-grouptitle" class="block font-bold text-slate-700 mb-1">
+                Tên nhóm tiêu chí
+              </label>
+              <input
+                type="text"
+                id="crud-crit-grouptitle"
+                placeholder="VD: 1. Kế hoạch cải cách hành chính"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              />
+            </div>
+            <div>
+              <label for="crud-crit-dept" class="block font-bold text-slate-700 mb-1">
+                Đơn vị chủ trì phụ trách
+              </label>
+              <select
+                id="crud-crit-dept"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+              >
+                <option value="Phòng Văn hóa – Xã hội phường">Phòng Văn hóa – Xã hội phường</option>
+                <option value="Văn phòng HĐND-UBND phường">Văn phòng HĐND-UBND phường</option>
+                <option value="Trung tâm Phục vụ hành chính công phường">Trung tâm Phục vụ hành chính công phường</option>
+                <option value="Phòng Kinh tế, Hạ tầng và Đô thị phường">Phòng Kinh tế, Hạ tầng và Đô thị phường</option>
+                <option value="Trung tâm Cung ứng dịch vụ sự nghiệp công phường">Trung tâm Cung ứng dịch vụ sự nghiệp công phường</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="crud-crit-title" class="block font-bold text-slate-700 mb-1">
+              Tên / Nội dung chi tiết của Tiêu chí *
+            </label>
+            <textarea
+              id="crud-crit-title"
+              rows="2"
+              placeholder="Nhập tên hoặc nội dung yêu cầu của tiêu chí..."
+              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="crud-crit-regulation" class="block font-bold text-slate-700 mb-1">
+              Quy định chấm điểm & Yêu cầu hồ sơ kiểm chứng
+            </label>
+            <textarea
+              id="crud-crit-regulation"
+              rows="2"
+              placeholder="Nhập nguyên văn quy định chấm điểm hoặc cách tính điểm..."
+              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="crud-crit-warning" class="block font-bold text-slate-700 mb-1">
+              Lưu ý kiểm soát / Cảnh báo chống mất điểm
+            </label>
+            <input
+              type="text"
+              id="crud-crit-warning"
+              placeholder="Nhập lưu ý kiểm soát tiến độ hoặc điều kiện bắt buộc..."
+              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+            />
+          </div>
+
+          <div
+            id="crud-crit-error"
+            class="hidden p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-800"
+          ></div>
+        </div>
+
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            id="btn-cancel-crud-modal"
+            class="btn-tactile-secondary px-4 py-2 text-xs font-bold rounded-lg cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            id="btn-save-crud-criterion"
+            class="btn-tactile-primary px-5 py-2 text-xs font-bold rounded-lg cursor-pointer"
+          >
+            Lưu Tiêu chí
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-md no-print"></div>
+
+    <!-- Điểm khởi chạy chuẩn ES6 Module -->
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
