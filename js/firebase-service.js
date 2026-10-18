@@ -28,6 +28,7 @@ import {
   EVALUATION_YEAR,
   DEFAULT_SYSTEM_CONFIG
 } from "./config.js";
+import { resolveEvidenceFileMeta } from "./models.js";
 
 const VALID_DOMAIN_IDS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
@@ -571,7 +572,7 @@ export class FirebaseRepository {
   }
 
   /**
-   * Tải tệp minh chứng lên Google Drive thông qua Google Apps Script Web App
+   * Tải tệp minh chứng hoặc tệp nén (.ZIP, .RAR, .7Z, .TAR.GZ...) lên Google Drive thông qua Google Apps Script Web App
    */
   async uploadFileToDriveViaGAS(file, criterionCode, year, systemConfig = {}) {
     const gasUrl = String(systemConfig.gasWebAppUrl || "").trim();
@@ -581,12 +582,14 @@ export class FirebaseRepository {
       );
     }
     if (!file) {
-      throw new Error("Vui lòng chọn tệp văn bản minh chứng để tải lên.");
+      throw new Error("Vui lòng chọn tệp văn bản hoặc tệp nén minh chứng để tải lên.");
     }
-    // Giới hạn 15MB cho Base64 qua Apps Script
-    if (file.size > 15 * 1024 * 1024) {
-      throw new Error("Kích thước tệp vượt quá 15MB. Vui lòng nén tệp PDF trước khi tải lên.");
+    // Hỗ trợ tệp nén và tài liệu dung lượng tối đa 30MB qua Apps Script
+    if (file.size > 30 * 1024 * 1024) {
+      throw new Error("Kích thước tệp vượt quá 30MB. Vui lòng chia nhỏ tệp nén hoặc tài liệu trước khi tải lên.");
     }
+
+    const fileMeta = resolveEvidenceFileMeta(file.name, file.type, file.size);
 
     const base64Data = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -604,7 +607,9 @@ export class FirebaseRepository {
       year: String(year || EVALUATION_YEAR),
       criterionCode: String(criterionCode || "MinhChung"),
       fileName: file.name,
-      mimeType: file.type || "application/pdf",
+      mimeType: fileMeta.mimeType,
+      isArchive: fileMeta.isArchive,
+      fileType: fileMeta.ext,
       base64Data
     };
 
@@ -628,7 +633,10 @@ export class FirebaseRepository {
     return {
       fileId: result.fileId || "",
       fileName: result.fileName || file.name,
-      fileUrl: result.viewUrl || result.fileUrl || ""
+      fileUrl: result.viewUrl || result.fileUrl || "",
+      fileType: fileMeta.ext,
+      fileSize: file.size,
+      isArchive: fileMeta.isArchive
     };
   }
 }

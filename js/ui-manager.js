@@ -15,7 +15,7 @@ import {
   GAS_SCRIPT_TEMPLATE,
   LOCAL_STORAGE_KEYS
 } from "./config.js";
-import { EvidenceItem } from "./models.js";
+import { EvidenceItem, resolveEvidenceFileMeta } from "./models.js";
 
 export class UIManager {
   constructor(appController) {
@@ -922,9 +922,14 @@ export class UIManager {
         statusColor = "text-emerald-800 font-bold";
       }
 
+      const archiveCount = c.evidences.filter((ev) => ev.isArchive).length;
       const evSummaryHtml =
         evCount > 0
-          ? `<div class="text-xs text-slate-800 font-semibold">${evCount} văn bản kiểm chứng</div>
+          ? `<div class="text-xs text-slate-800 font-semibold">${evCount} hồ sơ kiểm chứng${
+              archiveCount > 0
+                ? ` <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold rounded bg-blue-50 text-blue-900 border border-blue-200">${archiveCount} tệp nén</span>`
+                : ""
+            }</div>
              <div class="text-xs text-slate-500 truncate max-w-[180px]">${this.escapeHtml(
                c.evidences[0].docNumber
              )}: ${this.escapeHtml(c.evidences[0].summary)}</div>`
@@ -1568,6 +1573,8 @@ export class UIManager {
 
     const fileInput = document.getElementById("input-ev-file-upload");
     if (fileInput) fileInput.value = "";
+    this.selectedEvidenceFile = null;
+    this.renderSelectedEvidenceFileInfo(null);
 
     this.renderModalDynamicInputs();
     this.renderModalEvidenceList();
@@ -1865,6 +1872,83 @@ export class UIManager {
     }
   }
 
+  renderSelectedEvidenceFileInfo(file) {
+    const infoEl = document.getElementById("selected-ev-file-info");
+    if (!infoEl) return;
+
+    if (!file) {
+      infoEl.innerHTML = "";
+      infoEl.classList.add("hidden");
+      return;
+    }
+
+    const meta = resolveEvidenceFileMeta(file.name, file.type, file.size);
+    const badgeClass = meta.isArchive
+      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+      : "bg-white text-blue-900 border-blue-200";
+
+    infoEl.innerHTML = `
+      <div class="flex flex-wrap items-center gap-2 min-w-0">
+        <span class="px-2 py-0.5 text-[11px] font-mono font-bold rounded border ${badgeClass}">
+          ${this.escapeHtml(meta.badgeLabel)}
+        </span>
+        <span class="font-semibold text-slate-900 truncate max-w-[260px]">
+          ${this.escapeHtml(file.name)}
+        </span>
+        ${
+          meta.formattedSize
+            ? `<span class="font-mono text-[11px] text-slate-500">(${this.escapeHtml(
+                meta.formattedSize
+              )})</span>`
+            : ""
+        }
+      </div>
+      <button
+        type="button"
+        id="btn-clear-selected-ev-file"
+        class="px-2 py-0.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100 rounded cursor-pointer shrink-0"
+      >
+        Bỏ chọn tệp
+      </button>
+    `;
+    infoEl.classList.remove("hidden");
+
+    infoEl.querySelector("#btn-clear-selected-ev-file")?.addEventListener("click", () => {
+      const fileInp = document.getElementById("input-ev-file-upload");
+      if (fileInp) fileInp.value = "";
+      this.selectedEvidenceFile = null;
+      this.renderSelectedEvidenceFileInfo(null);
+    });
+  }
+
+  handleEvidenceFileSelected(file) {
+    this.selectedEvidenceFile = file || null;
+    this.renderSelectedEvidenceFileInfo(this.selectedEvidenceFile);
+    if (!file) return;
+
+    const meta = resolveEvidenceFileMeta(file.name, file.type, file.size);
+    const critCode = this.editingCriterion?.code || "CCHC";
+    const docNumEl = document.getElementById("new-ev-docnum");
+    const dateEl = document.getElementById("new-ev-date");
+    const sumEl = document.getElementById("new-ev-summary");
+    const errEl = document.getElementById("new-ev-error");
+
+    if (errEl) errEl.classList.add("hidden");
+
+    if (docNumEl && !docNumEl.value.trim()) {
+      docNumEl.value = meta.isArchive ? `HSN-${critCode}` : `MC-${critCode}`;
+    }
+    if (dateEl && !dateEl.value) {
+      dateEl.value = new Date().toISOString().slice(0, 10);
+    }
+    if (sumEl && !sumEl.value.trim()) {
+      const sizeSuffix = meta.formattedSize ? ` (${meta.formattedSize})` : "";
+      sumEl.value = meta.isArchive
+        ? `Hồ sơ minh chứng nén (.${meta.ext || "ZIP"}): ${file.name}${sizeSuffix}`
+        : `Tệp tài liệu minh chứng: ${file.name}${sizeSuffix}`;
+    }
+  }
+
   renderModalEvidenceList() {
     const listContainer = document.getElementById("modal-evidence-list");
     if (!listContainer) return;
@@ -1872,27 +1956,59 @@ export class UIManager {
     if (this.tempEvidences.length === 0) {
       listContainer.innerHTML = `
         <div class="p-4 text-center text-xs text-slate-500 border border-dashed border-slate-300 rounded-xl">
-          Chưa có văn bản kiểm chứng nào được đính kèm. Vui lòng thêm văn bản hoặc tải file lên Google Drive bên dưới.
+          Chưa có hồ sơ kiểm chứng nào được đính kèm. Vui lòng chọn tệp nén (.ZIP, .RAR, .7Z) hoặc văn bản bên dưới để đính kèm.
         </div>
       `;
       return;
     }
 
     listContainer.innerHTML = this.tempEvidences
-      .map(
-        (ev, idx) => `
+      .map((ev, idx) => {
+        const meta = resolveEvidenceFileMeta(
+          ev.fileName || ev.fileUrl || ev.summary,
+          ev.fileType || "",
+          ev.fileSize || 0
+        );
+        const isArchive = Boolean(ev.isArchive || meta.isArchive);
+        const extLabel = ev.fileType || meta.ext || (isArchive ? "ZIP" : "");
+        const badgeHtml = isArchive
+          ? `<span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-200">TỆP NÉN .${this.escapeHtml(
+              extLabel
+            )}</span>`
+          : extLabel
+          ? `<span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-blue-50 text-blue-900 border border-blue-200">TỆP .${this.escapeHtml(
+              extLabel
+            )}</span>`
+          : "";
+
+        return `
       <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="text-xs space-y-0.5">
-          <div class="font-bold text-slate-900">
+        <div class="text-xs space-y-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 font-bold text-slate-900">
             <span class="font-mono text-blue-900">${this.escapeHtml(ev.docNumber)}</span>
             <span aria-hidden="true"> · </span>
             <span class="font-mono text-slate-500">Ngày: ${this.escapeHtml(
               ev.issueDate || String(this.app.manager.activeYear)
             )}</span>
+            ${badgeHtml}
+            ${
+              meta.formattedSize
+                ? `<span class="font-mono text-[11px] font-normal text-slate-500">(${this.escapeHtml(
+                    meta.formattedSize
+                  )})</span>`
+                : ""
+            }
           </div>
           <div class="text-slate-700">${this.escapeHtml(ev.summary)}</div>
           ${
-            ev.fileUrl
+            ev.fileName && !ev.summary.includes(ev.fileName)
+              ? `<div class="font-mono text-[11px] text-slate-500">Tệp đính kèm: ${this.escapeHtml(
+                  ev.fileName
+                )}</div>`
+              : ""
+          }
+          ${
+            ev.fileUrl && ev.fileUrl.startsWith("http")
               ? `<a href="${this.escapeHtml(
                   ev.fileUrl
                 )}" target="_blank" rel="noopener noreferrer" class="text-blue-800 font-medium hover:underline inline-block truncate max-w-md">${this.escapeHtml(
@@ -1910,8 +2026,8 @@ export class UIManager {
           Xóa
         </button>
       </div>
-    `
-      )
+    `;
+      })
       .join("");
 
     listContainer.querySelectorAll("[data-remove-evidence]").forEach((btn) => {
@@ -1923,21 +2039,54 @@ export class UIManager {
     });
   }
 
-  handleAddEvidenceFromForm() {
+  handleAddEvidenceFromForm(uploadedMeta = null) {
     const docNumEl = document.getElementById("new-ev-docnum");
     const dateEl = document.getElementById("new-ev-date");
     const sumEl = document.getElementById("new-ev-summary");
     const urlEl = document.getElementById("new-ev-url");
+    const fileInp = document.getElementById("input-ev-file-upload");
     const errEl = document.getElementById("new-ev-error");
 
-    const docNumber = docNumEl?.value.trim() || "";
+    const activeFile = uploadedMeta || fileInp?.files?.[0] || this.selectedEvidenceFile || null;
+    const critCode = this.editingCriterion?.code || "CCHC";
+
+    let docNumber = docNumEl?.value.trim() || "";
     const issueDate = dateEl?.value.trim() || new Date().toISOString().slice(0, 10);
-    const summary = sumEl?.value.trim() || "";
-    const fileUrl = urlEl?.value.trim() || "";
+    let summary = sumEl?.value.trim() || "";
+    let fileUrl = urlEl?.value.trim() || "";
+    let fileName = "";
+    let fileType = "";
+    let fileSize = 0;
+    let isArchive = false;
+
+    if (activeFile) {
+      fileName = activeFile.fileName || activeFile.name || "";
+      fileSize = Number(activeFile.fileSize || activeFile.size || 0);
+      const meta = resolveEvidenceFileMeta(
+        fileName,
+        activeFile.fileType || activeFile.type || "",
+        fileSize
+      );
+      fileType = activeFile.fileType || meta.ext || "";
+      isArchive = Boolean(activeFile.isArchive !== undefined ? activeFile.isArchive : meta.isArchive);
+      if (activeFile.fileUrl && !fileUrl) {
+        fileUrl = activeFile.fileUrl;
+      }
+      if (!docNumber) {
+        docNumber = isArchive ? `HSN-${critCode}` : `MC-${critCode}`;
+      }
+      if (!summary && fileName) {
+        const sizeSuffix = meta.formattedSize ? ` (${meta.formattedSize})` : "";
+        summary = isArchive
+          ? `Hồ sơ minh chứng nén (.${fileType || "ZIP"}): ${fileName}${sizeSuffix}`
+          : `Tệp tài liệu minh chứng: ${fileName}${sizeSuffix}`;
+      }
+    }
 
     if (!docNumber || !summary) {
       if (errEl) {
-        errEl.textContent = "Vui lòng nhập đầy đủ Số ký hiệu văn bản và Trích yếu nội dung minh chứng!";
+        errEl.textContent =
+          "Vui lòng chọn tệp nén (.ZIP, .RAR, .7Z...) / tài liệu hoặc nhập Số ký hiệu văn bản và Trích yếu nội dung minh chứng!";
         errEl.classList.remove("hidden");
       }
       return;
@@ -1951,6 +2100,10 @@ export class UIManager {
         issueDate,
         summary,
         fileUrl,
+        fileName,
+        fileType,
+        fileSize,
+        isArchive,
         checklistPassed: true
       })
     );
@@ -1958,6 +2111,9 @@ export class UIManager {
     if (docNumEl) docNumEl.value = "";
     if (sumEl) sumEl.value = "";
     if (urlEl) urlEl.value = "";
+    if (fileInp) fileInp.value = "";
+    this.selectedEvidenceFile = null;
+    this.renderSelectedEvidenceFileInfo(null);
     this.renderModalEvidenceList();
   }
 

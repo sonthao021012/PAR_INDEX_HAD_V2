@@ -9,6 +9,108 @@
 
 import { DOMAINS_META, EVALUATION_YEAR, getRankingGrade } from "./config.js";
 
+const ARCHIVE_MIME_MAP = {
+  zip: "application/zip",
+  rar: "application/vnd.rar",
+  "7z": "application/x-7z-compressed",
+  "tar.gz": "application/gzip",
+  tgz: "application/gzip",
+  gz: "application/gzip",
+  tar: "application/x-tar",
+  "tar.bz2": "application/x-bzip2",
+  bz2: "application/x-bzip2",
+  "tar.xz": "application/x-xz",
+  xz: "application/x-xz"
+};
+
+const DOCUMENT_MIME_MAP = {
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg"
+};
+
+/**
+ * Nhận diện định dạng tệp minh chứng (Đặc biệt hỗ trợ các định dạng tệp nén .ZIP, .RAR, .7Z, .TAR.GZ...)
+ */
+export function resolveEvidenceFileMeta(fileNameOrText = "", rawMimeType = "", fileSize = 0) {
+  const cleanStr = String(fileNameOrText || "").trim().toLowerCase();
+  let detectedExt = "";
+
+  const multiExts = ["tar.gz", "tar.bz2", "tar.xz"];
+  for (const mExt of multiExts) {
+    if (
+      cleanStr.endsWith(`.${mExt}`) ||
+      cleanStr.includes(`.${mExt} `) ||
+      cleanStr.includes(`.${mExt})`)
+    ) {
+      detectedExt = mExt;
+      break;
+    }
+  }
+
+  if (!detectedExt) {
+    const extMatch = cleanStr.match(/\.(zip|rar|7z|tgz|tar|gz|bz2|xz|pdf|docx?|xlsx?|pptx?|png|jpe?g)(?:$|\b|\s|\))/i);
+    if (extMatch) {
+      detectedExt = extMatch[1].toLowerCase();
+    }
+  }
+
+  const rawMime = String(rawMimeType || "").trim().toLowerCase();
+  if (!detectedExt && rawMime) {
+    if (rawMime.includes("zip")) detectedExt = "zip";
+    else if (rawMime.includes("rar")) detectedExt = "rar";
+    else if (rawMime.includes("7z")) detectedExt = "7z";
+    else if (rawMime.includes("gzip")) detectedExt = "gz";
+    else if (rawMime.includes("tar")) detectedExt = "tar";
+    else if (rawMime.includes("pdf")) detectedExt = "pdf";
+  }
+
+  const isArchive = Boolean(
+    (detectedExt && Object.prototype.hasOwnProperty.call(ARCHIVE_MIME_MAP, detectedExt)) ||
+      /zip|rar|7z|gzip|x-tar|x-bzip|x-xz/i.test(rawMime)
+  );
+
+  const mimeType =
+    ARCHIVE_MIME_MAP[detectedExt] ||
+    DOCUMENT_MIME_MAP[detectedExt] ||
+    (rawMime && rawMime !== "application/octet-stream" ? rawMime : "") ||
+    (isArchive ? "application/zip" : "application/octet-stream");
+
+  const sizeNum = Math.max(0, Number(fileSize || 0));
+  let formattedSize = "";
+  if (sizeNum > 0) {
+    if (sizeNum >= 1024 * 1024) {
+      formattedSize = `${(sizeNum / (1024 * 1024)).toFixed(2).replace(".", ",")} MB`;
+    } else if (sizeNum >= 1024) {
+      formattedSize = `${(sizeNum / 1024).toFixed(1).replace(".", ",")} KB`;
+    } else {
+      formattedSize = `${sizeNum} B`;
+    }
+  }
+
+  const extUpper = detectedExt ? detectedExt.toUpperCase() : isArchive ? "ZIP" : "";
+  const badgeLabel = isArchive
+    ? `Tệp nén .${extUpper || "ZIP"}`
+    : extUpper
+    ? `Tệp .${extUpper}`
+    : "Tài liệu";
+
+  return {
+    ext: extUpper,
+    isArchive,
+    mimeType,
+    formattedSize,
+    badgeLabel
+  };
+}
+
 /**
  * 1. Lớp quản lý Hồ sơ minh chứng (EvidenceItem)
  */
@@ -18,6 +120,16 @@ export class EvidenceItem {
     this.issueDate = String(data.issueDate || "").slice(0, 32);
     this.summary = String(data.summary || "").slice(0, 500);
     this.fileUrl = String(data.fileUrl || "").slice(0, 500);
+    this.fileName = String(data.fileName || "").slice(0, 255);
+    this.fileSize = Math.max(0, Number(data.fileSize || 0));
+
+    const meta = resolveEvidenceFileMeta(
+      this.fileName || this.fileUrl || this.summary,
+      data.mimeType || "",
+      this.fileSize
+    );
+    this.fileType = String(data.fileType || meta.ext || "").slice(0, 32);
+    this.isArchive = Boolean(data.isArchive !== undefined ? data.isArchive : meta.isArchive);
     this.checklistPassed = Boolean(data.checklistPassed !== false);
   }
 
@@ -31,6 +143,10 @@ export class EvidenceItem {
       issueDate: this.issueDate,
       summary: this.summary,
       fileUrl: this.fileUrl,
+      fileName: this.fileName,
+      fileType: this.fileType,
+      fileSize: this.fileSize,
+      isArchive: this.isArchive,
       checklistPassed: this.checklistPassed
     };
   }

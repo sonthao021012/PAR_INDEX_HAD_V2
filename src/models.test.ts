@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import {
   BooleanCriterion,
   CCHCManager,
-  createCriterionInstance
+  EvidenceItem,
+  resolveEvidenceFileMeta
 } from "../js/models.js";
 import { DEFAULT_CRITERIA_DATA } from "../js/data-cchc-2851.js";
 import { ADMIN_PASSWORD, GAS_SCRIPT_TEMPLATE } from "../js/config.js";
@@ -121,10 +122,42 @@ test("Polymorphic scoring calculation works when user inputs real values", () =>
   );
 });
 
+test("Compressed archive files (.zip, .rar, .7z, .tar.gz) are recognized and stored properly as EvidenceItem", () => {
+  const rarMeta = resolveEvidenceFileMeta("Minh_Chung_I_1_a.rar", "", 2.5 * 1024 * 1024);
+  assert.equal(rarMeta.isArchive, true);
+  assert.equal(rarMeta.ext, "RAR");
+  assert.equal(rarMeta.mimeType, "application/vnd.rar");
+  assert.equal(rarMeta.formattedSize, "2,50 MB");
+
+  const sevenZMeta = resolveEvidenceFileMeta("HoSo_VII_2_b.7z", "application/octet-stream", 512 * 1024);
+  assert.equal(sevenZMeta.isArchive, true);
+  assert.equal(sevenZMeta.ext, "7Z");
+  assert.equal(sevenZMeta.mimeType, "application/x-7z-compressed");
+
+  const tarGzMeta = resolveEvidenceFileMeta("TaiLieu_IX_1_a.tar.gz", "", 102400);
+  assert.equal(tarGzMeta.isArchive, true);
+  assert.equal(tarGzMeta.ext, "TAR.GZ");
+  assert.equal(tarGzMeta.mimeType, "application/gzip");
+
+  const evZip = new EvidenceItem({
+    docNumber: "HSN-I.1.a",
+    issueDate: "2026-10-18",
+    summary: "Hồ sơ minh chứng nén (.ZIP): Ho_So_Kiem_Chung.zip",
+    fileName: "Ho_So_Kiem_Chung.zip",
+    fileSize: 1048576
+  });
+  assert.equal(evZip.isValid(), true);
+  assert.equal(evZip.isArchive, true);
+  assert.equal(evZip.fileType, "ZIP");
+  assert.equal(evZip.toJSON().isArchive, true);
+  assert.equal(evZip.toJSON().fileType, "ZIP");
+});
+
 test("System Settings: Admin password, GAS template, Multi-year management, Criteria CRUD, and Backup/Restore", () => {
   assert.equal(ADMIN_PASSWORD, "tsvmmm");
   assert.ok(GAS_SCRIPT_TEMPLATE.includes("function doPost(e)"));
   assert.ok(GAS_SCRIPT_TEMPLATE.includes("DriveApp"));
+  assert.ok(GAS_SCRIPT_TEMPLATE.includes("resolveMimeType"));
 
   const manager = new CCHCManager(DEFAULT_CRITERIA_DATA, 2026);
   assert.equal(manager.activeYear, 2026);

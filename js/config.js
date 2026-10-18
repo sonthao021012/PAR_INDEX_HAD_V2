@@ -48,7 +48,8 @@ export const DEFAULT_SYSTEM_CONFIG = {
 };
 
 export const GAS_SCRIPT_TEMPLATE = `/**
- * MÃ NGUỒN GOOGLE APPS SCRIPT (Code.gs) - TẢI FILE MINH CHỨNG CCHC LÊN GOOGLE DRIVE
+ * MÃ NGUỒN GOOGLE APPS SCRIPT (Code.gs) - TẢI FILE MINH CHỨNG & FILE NÉN CCHC LÊN GOOGLE DRIVE
+ * Hỗ trợ đầy đủ: File nén (.ZIP, .RAR, .7Z, .TAR, .GZ, .TGZ), Tài liệu (.PDF, .DOCX, .XLSX) và Hình ảnh
  * Hướng dẫn cài đặt:
  * 1. Truy cập https://script.google.com -> Tạo dự án mới (New Project)
  * 2. Xóa mã mặc định và dán toàn bộ đoạn mã này vào file Code.gs
@@ -59,6 +60,20 @@ export const GAS_SCRIPT_TEMPLATE = `/**
  * 5. Bấm Triển khai, cấp quyền Google Drive và sao chép URL Web App (/exec) dán vào Cài đặt hệ thống.
  */
 
+function resolveMimeType(fileName, providedMime) {
+  if (providedMime && providedMime !== "application/octet-stream") {
+    return providedMime;
+  }
+  var lower = String(fileName || "").toLowerCase();
+  if (lower.indexOf(".zip") !== -1) return "application/zip";
+  if (lower.indexOf(".rar") !== -1) return "application/vnd.rar";
+  if (lower.indexOf(".7z") !== -1) return "application/x-7z-compressed";
+  if (lower.indexOf(".tar.gz") !== -1 || lower.indexOf(".tgz") !== -1 || lower.indexOf(".gz") !== -1) return "application/gzip";
+  if (lower.indexOf(".tar") !== -1) return "application/x-tar";
+  if (lower.indexOf(".pdf") !== -1) return "application/pdf";
+  return providedMime || "application/octet-stream";
+}
+
 function doPost(e) {
   try {
     var payload = JSON.parse(e.postData.contents);
@@ -66,7 +81,7 @@ function doPost(e) {
     var year = String(payload.year || "2026");
     var criterionCode = String(payload.criterionCode || "MinhChung");
     var fileName = payload.fileName || ("MC_" + criterionCode + "_" + new Date().getTime());
-    var mimeType = payload.mimeType || "application/pdf";
+    var mimeType = resolveMimeType(fileName, payload.mimeType);
     var base64Data = payload.base64Data || "";
 
     var parentFolder = folderId
@@ -78,12 +93,12 @@ function doPost(e) {
     var yearFolders = parentFolder.getFoldersByName(yearFolderName);
     var yearFolder = yearFolders.hasNext() ? yearFolders.next() : parentFolder.createFolder(yearFolderName);
 
-    // Giải mã Base64 và tạo file trên Google Drive
+    // Giải mã Base64 và tạo file trên Google Drive (hỗ trợ cả file nén .ZIP/.RAR/.7Z và tài liệu)
     var decoded = Utilities.base64Decode(base64Data);
     var blob = Utilities.newBlob(decoded, mimeType, "[" + criterionCode + "] " + fileName);
     var file = yearFolder.createFile(blob);
 
-    // Cấp quyền xem qua link để Hội đồng thẩm định có thể mở kiểm tra
+    // Cấp quyền xem/tải qua link để Hội đồng thẩm định có thể mở kiểm tra
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     return ContentService.createTextOutput(JSON.stringify({

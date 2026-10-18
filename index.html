@@ -1097,27 +1097,32 @@
             </div>
             <div id="modal-evidence-list" class="space-y-2"></div>
 
-            <!-- Form thêm văn bản kiểm chứng mới & Tải file lên Google Drive qua GAS -->
+            <!-- Form thêm văn bản kiểm chứng mới & Tải file / Tệp nén lên Google Drive qua GAS -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-xs font-bold text-slate-800">
-                    Thêm văn bản / tài liệu kiểm chứng mới:
-                  </span>
-                  <span
-                    id="modal-drive-status-badge"
-                    class="px-2 py-0.5 text-[11px] font-semibold rounded bg-amber-50 text-amber-800 border border-amber-200"
-                  >
-                    Drive: Chưa kết nối
-                  </span>
+                <div class="space-y-0.5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-800">
+                      Thêm văn bản / tệp nén minh chứng mới:
+                    </span>
+                    <span
+                      id="modal-drive-status-badge"
+                      class="px-2 py-0.5 text-[11px] font-semibold rounded bg-amber-50 text-amber-800 border border-amber-200"
+                    >
+                      Drive: Chưa kết nối
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-slate-500">
+                    Hỗ trợ: <strong class="text-blue-900">Tệp nén (.ZIP, .RAR, .7Z, .TAR.GZ)</strong> &amp; Tài liệu (.PDF, .DOCX, .XLSX, Ảnh — tối đa 30MB)
+                  </div>
                 </div>
-                <!-- Khu vực tải file trực tiếp lên Google Drive qua GAS -->
+                <!-- Khu vực chọn file nén / tài liệu và tải trực tiếp lên Google Drive qua GAS -->
                 <div class="flex items-center gap-2">
                   <input
                     type="file"
                     id="input-ev-file-upload"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip"
-                    class="text-[11px] text-slate-600 max-w-[200px] file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border file:border-blue-300 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip,.rar,.7z,.tar,.gz,.tgz,.bz2,.xz,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed,application/x-tar,application/gzip,application/x-bzip2,application/x-xz"
+                    class="text-[11px] text-slate-600 max-w-[210px] file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border file:border-blue-300 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
                   />
                   <button
                     type="button"
@@ -1128,6 +1133,12 @@
                   </button>
                 </div>
               </div>
+
+              <!-- Thanh hiển thị thông tin tệp nén / tài liệu vừa chọn từ máy tính -->
+              <div
+                id="selected-ev-file-info"
+                class="hidden p-2.5 bg-blue-50/70 border border-blue-200 rounded-lg text-xs text-slate-800 flex items-center justify-between gap-2"
+              ></div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>

@@ -40,6 +40,15 @@ body {
   width: 100%;
 }
 
+#criterion-modal,
+#criterion-crud-modal {
+  z-index: 90 !important;
+}
+
+#toast-container {
+  z-index: 100 !important;
+}
+
 /* Khung tiêu đề điều hành nằm bên trong Header cố định */
 .sticky-hero-header {
   position: relative;

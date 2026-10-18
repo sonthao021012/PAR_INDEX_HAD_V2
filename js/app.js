@@ -278,6 +278,11 @@ export class PARIndexApp {
       this.ui.closeCriterionModal();
     });
 
+    document.getElementById("input-ev-file-upload")?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0] || null;
+      this.ui.handleEvidenceFileSelected(file);
+    });
+
     document.getElementById("btn-add-evidence")?.addEventListener("click", () => {
       this.ui.handleAddEvidenceFromForm();
     });
@@ -715,11 +720,12 @@ export class PARIndexApp {
   async handleUploadEvidenceFileToDrive() {
     const fileInp = document.getElementById("input-ev-file-upload");
     const errEl = document.getElementById("new-ev-error");
-    const file = fileInp?.files?.[0];
+    const file = fileInp?.files?.[0] || this.ui.selectedEvidenceFile;
 
     if (!file) {
       if (errEl) {
-        errEl.textContent = "Vui lòng bấm chọn tệp minh chứng từ máy tính trước khi tải lên Google Drive!";
+        errEl.textContent =
+          "Vui lòng bấm chọn tệp nén (.ZIP, .RAR, .7Z...) hoặc tài liệu minh chứng từ máy tính trước khi tải lên Google Drive!";
         errEl.classList.remove("hidden");
       }
       return;
@@ -728,7 +734,7 @@ export class PARIndexApp {
     if (!this.systemConfig.gasWebAppUrl) {
       if (errEl) {
         errEl.textContent =
-          "Chưa cấu hình URL Web App Google Apps Script. Vui lòng vào mục 'Cài đặt hệ thống' (Mật khẩu: tsvmmm) để cài đặt thông số Google Drive!";
+          "Chưa cấu hình URL Web App Google Apps Script. Bạn có thể bấm '+ Đính kèm vào danh sách' để lưu thông tin tệp nén ngay, hoặc vào mục 'Cài đặt hệ thống' (Mật khẩu: tsvmmm) để kết nối Google Drive!";
         errEl.classList.remove("hidden");
       }
       return;
@@ -751,19 +757,20 @@ export class PARIndexApp {
       );
 
       const urlEl = document.getElementById("new-ev-url");
-      const sumEl = document.getElementById("new-ev-summary");
-      const docNumEl = document.getElementById("new-ev-docnum");
-
       if (urlEl) urlEl.value = uploaded.fileUrl;
-      if (sumEl && !sumEl.value.trim()) {
-        sumEl.value = `Tệp minh chứng đính kèm: ${file.name}`;
-      }
-      if (docNumEl && !docNumEl.value.trim()) {
-        docNumEl.value = `MC-${critCode}`;
-      }
-      if (fileInp) fileInp.value = "";
 
-      this.ui.showToast(`Đã tải tệp "${file.name}" lên Google Drive thành công!`);
+      // Tự động đính kèm tệp vừa tải lên vào danh sách hồ sơ kiểm chứng
+      this.ui.handleAddEvidenceFromForm({
+        fileName: uploaded.fileName || file.name,
+        fileUrl: uploaded.fileUrl,
+        fileType: uploaded.fileType,
+        fileSize: uploaded.fileSize || file.size,
+        isArchive: uploaded.isArchive
+      });
+
+      this.ui.showToast(
+        `Đã tải tệp "${file.name}" lên Google Drive và đính kèm vào danh sách minh chứng!`
+      );
     } catch (err) {
       if (errEl) {
         errEl.textContent = err instanceof Error ? err.message : "Lỗi khi tải tệp lên Google Drive.";
@@ -899,6 +906,15 @@ export class PARIndexApp {
       if (chk) {
         this.ui.tempInputs.violated = Boolean(chk.checked);
       }
+    }
+
+    // Nếu người dùng đã chọn tệp nén/tài liệu hoặc nhập Số ký hiệu + Trích yếu mà chưa bấm "+ Đính kèm", tự động đính kèm khi bấm Lưu
+    const pendingFile =
+      document.getElementById("input-ev-file-upload")?.files?.[0] || this.ui.selectedEvidenceFile;
+    const pendingDocNum = document.getElementById("new-ev-docnum")?.value.trim() || "";
+    const pendingSummary = document.getElementById("new-ev-summary")?.value.trim() || "";
+    if (pendingFile || (pendingDocNum && pendingSummary)) {
+      this.ui.handleAddEvidenceFromForm();
     }
 
     crit.calculateScore(this.ui.tempInputs);
