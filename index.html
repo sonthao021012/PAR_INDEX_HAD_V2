@@ -42,117 +42,12 @@
     </script>
   </head>
   <body class="min-h-screen flex flex-col text-slate-900">
-    <!-- TOP BAR CONTRACT (3 Zones: 1-line Brand Wordmark | 5 Nav Links | 1 Primary CTA) -->
-    <header class="bg-white/95 backdrop-blur border-b border-slate-300 sticky top-0 z-30 shadow-xs no-print">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sm:gap-8">
-        <!-- Zone 1: Brand Wordmark (single text element) -->
-        <a
-          href="#dashboard"
-          id="brand-home-link"
-          class="text-sm sm:text-base font-extrabold tracking-tight text-blue-950 truncate"
-        >
-          UBND Phường Hội An Đông — PAR Index
-        </a>
-
-        <!-- Zone 2: 5 concise single-line text navigation links -->
-        <nav
-          aria-label="Điều hướng phân hệ chính"
-          class="hidden md:flex items-center gap-6 text-sm font-medium shrink-0"
-        >
-          <a
-            href="#dashboard"
-            id="nav-tab-dashboard"
-            class="text-blue-900 font-bold border-b-2 border-blue-800 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Tổng quan
-          </a>
-          <a
-            href="#scoring"
-            id="nav-tab-scoring"
-            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Bảng chấm điểm
-          </a>
-          <a
-            href="#units"
-            id="nav-tab-units"
-            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Theo dõi đơn vị
-          </a>
-          <a
-            href="#reports"
-            id="nav-tab-reports"
-            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Xuất báo cáo
-          </a>
-          <a
-            href="#settings"
-            id="nav-tab-settings"
-            class="text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Cài đặt hệ thống
-          </a>
-        </nav>
-
-        <!-- Zone 3: 1 Primary Action -->
-        <div class="flex items-center shrink-0">
-          <button
-            type="button"
-            id="btn-top-export"
-            class="btn-tactile-primary px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Xuất báo cáo CCHC
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- MOBILE NAVIGATION BAR -->
-    <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center gap-1.5 overflow-x-auto no-print">
-      <button
-        type="button"
-        data-mobile-tab="dashboard"
-        class="px-3 py-1.5 text-xs font-bold text-blue-900 bg-blue-50 rounded-lg whitespace-nowrap cursor-pointer"
-      >
-        Tổng quan
-      </button>
-      <button
-        type="button"
-        data-mobile-tab="scoring"
-        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
-      >
-        Chấm điểm
-      </button>
-      <button
-        type="button"
-        data-mobile-tab="units"
-        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
-      >
-        Đơn vị
-      </button>
-      <button
-        type="button"
-        data-mobile-tab="reports"
-        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
-      >
-        Báo cáo
-      </button>
-      <button
-        type="button"
-        data-mobile-tab="settings"
-        class="px-3 py-1.5 text-xs font-medium text-slate-600 rounded-lg whitespace-nowrap cursor-pointer"
-      >
-        Cài đặt
-      </button>
-    </div>
-
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
       <!-- ELEVATED HERO WORKSPACE BANNER -->
       <section
-        class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-blue-800/40 flex flex-col xl:flex-row xl:items-center justify-between gap-5 no-print"
+        aria-label="Khung tiêu đề điều hành"
+        class="sticky top-0 z-30 sticky-hero-header bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-blue-800/40 flex flex-col xl:flex-row xl:items-center justify-between gap-5 no-print"
       >
         <div class="flex items-center gap-4">
           <img
@@ -164,48 +59,94 @@
             <div class="text-xs font-semibold text-blue-200 tracking-wide">
               ỦY BAN NHÂN DÂN PHƯỜNG HỘI AN ĐÔNG · THÀNH PHỐ ĐÀ NẴNG
             </div>
-            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">
-              Hệ thống Theo dõi, Đánh giá & Xếp hạng Kết quả Cải cách hành chính (<span id="hero-active-year-label">Năm 2026</span>)
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white uppercase">
+              HỆ THỐNG QUẢN LÝ PAR INDEX
             </h1>
-            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-              <span>Căn cứ Phụ lục II - Quyết định số 2851/QĐ-UBND</span>
-              <span aria-hidden="true">·</span>
-              <span id="firebase-sync-label" class="font-medium text-emerald-300">
-                Đang kết nối cơ sở dữ liệu Cloud Firestore...
-              </span>
-            </div>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-          <!-- Chọn Năm chấm điểm -->
-          <div class="flex items-center gap-2 bg-slate-800/90 border border-slate-600 rounded-xl px-3 py-2">
-            <label for="header-year-select" class="text-xs font-semibold text-blue-200 whitespace-nowrap">
-              Năm chấm điểm:
-            </label>
-            <select
-              id="header-year-select"
-              aria-label="Chọn năm chấm điểm"
-              class="bg-transparent text-xs font-extrabold text-white focus:outline-none cursor-pointer font-mono tabular-nums"
+        <div class="flex flex-col xl:items-end gap-3 shrink-0">
+          <div class="flex flex-wrap items-center xl:justify-end gap-2.5">
+            <!-- Trạng thái đồng bộ trực tuyến -->
+            <div
+              id="firebase-sync-badge"
+              class="flex items-center gap-2 bg-slate-800/90 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-300"
             >
-              <option value="2026" class="text-slate-900">Năm 2026</option>
-            </select>
+              <svg
+                id="firebase-sync-icon"
+                class="w-4 h-4 text-emerald-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                />
+              </svg>
+              <span id="firebase-sync-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span id="firebase-sync-label" class="whitespace-nowrap">Đồng bộ trực tuyến</span>
+            </div>
+
+            <!-- Chọn Năm chấm điểm -->
+            <div class="flex items-center gap-2 bg-slate-800/90 border border-slate-600 rounded-xl px-3 py-2">
+              <label for="header-year-select" class="text-xs font-semibold text-blue-200 whitespace-nowrap">
+                Năm chấm điểm:
+              </label>
+              <select
+                id="header-year-select"
+                aria-label="Chọn năm chấm điểm"
+                class="bg-transparent text-xs font-extrabold text-white focus:outline-none cursor-pointer font-mono tabular-nums"
+              >
+                <option value="2026" class="text-slate-900">Năm 2026</option>
+              </select>
+            </div>
           </div>
 
-          <button
-            type="button"
-            id="btn-export-csv"
-            class="px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-xl shadow-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          <!-- Điều hướng phân hệ chính nổi bật nằm dưới Trạng thái đồng bộ và Năm chấm điểm -->
+          <nav
+            aria-label="Điều hướng phân hệ chính"
+            class="flex flex-wrap items-center xl:justify-end gap-2.5"
           >
-            Xuất Bảng điểm (.CSV)
-          </button>
-          <button
-            type="button"
-            id="btn-seed-reset"
-            class="px-3.5 py-2 text-xs font-semibold text-blue-100 bg-blue-900/70 hover:bg-blue-800 border border-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Đặt lại Bảng điểm (0đ)
-          </button>
+            <a
+              href="#dashboard"
+              id="nav-tab-dashboard"
+              class="btn-tactile-nav-active px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Tổng quan
+            </a>
+            <a
+              href="#scoring"
+              id="nav-tab-scoring"
+              class="btn-tactile-nav px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Bảng chấm điểm
+            </a>
+            <a
+              href="#units"
+              id="nav-tab-units"
+              class="btn-tactile-nav px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Theo dõi đơn vị
+            </a>
+            <a
+              href="#reports"
+              id="nav-tab-reports"
+              class="btn-tactile-nav px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Xuất báo cáo
+            </a>
+            <a
+              href="#settings"
+              id="nav-tab-settings"
+              class="btn-tactile-nav px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Cài đặt hệ thống
+            </a>
+          </nav>
         </div>
       </section>
 

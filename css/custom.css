@@ -14,6 +14,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Khung tiêu đề cố định khi cuộn (Sticky Hero Header) */
+.sticky-hero-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
 /* Nổi khối 3D Tactile Surface Cards */
 .card-3d {
   background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
@@ -87,6 +94,50 @@ body {
 }
 
 .btn-tactile-primary:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+
+.btn-tactile-nav {
+  background: linear-gradient(180deg, #2563EB 0%, #1E40AF 100%);
+  color: #FFFFFF;
+  border: 1px solid #3B82F6;
+  border-bottom: 3px solid #172554;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.15s ease;
+}
+
+.btn-tactile-nav:hover {
+  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+  color: #FFFFFF;
+  border-color: #60A5FA;
+  border-bottom-color: #1E3A8A;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-tactile-nav:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+
+.btn-tactile-nav-active {
+  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+  color: #FFFFFF;
+  border: 1px solid #FBBF24;
+  border-bottom: 3px solid #92400E;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.15s ease;
+}
+
+.btn-tactile-nav-active:hover {
+  background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.btn-tactile-nav-active:active {
   transform: translateY(1px);
   border-bottom-width: 1px;
 }

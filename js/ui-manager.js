@@ -115,10 +115,10 @@ export class UIManager {
       if (navBtn) {
         if (t === tabId) {
           navBtn.className =
-            "text-blue-900 font-bold border-b-2 border-blue-800 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer";
+            "btn-tactile-nav-active px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer";
         } else {
           navBtn.className =
-            "text-slate-600 hover:text-slate-900 pb-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer";
+            "btn-tactile-nav px-3 sm:px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap shrink-0 cursor-pointer";
         }
       }
     }
@@ -139,13 +139,29 @@ export class UIManager {
 
   updateConnectionIndicator(isConnected) {
     const statusText = document.getElementById("firebase-sync-label");
+    const badge = document.getElementById("firebase-sync-badge");
+    const icon = document.getElementById("firebase-sync-icon");
+    const dot = document.getElementById("firebase-sync-dot");
+
     if (statusText) {
       statusText.textContent = isConnected
-        ? "Đồng bộ trực tuyến Cloud Firestore (bau-cu-hoi-an-dong)"
-        : "Chế độ lưu trữ ngoại tuyến (Local Cache)";
-      statusText.className = isConnected
-        ? "font-medium text-emerald-300"
-        : "font-medium text-amber-300";
+        ? "Đồng bộ trực tuyến"
+        : "Lưu trữ ngoại tuyến";
+    }
+    if (badge) {
+      badge.className = isConnected
+        ? "flex items-center gap-2 bg-slate-800/90 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-300"
+        : "flex items-center gap-2 bg-slate-800/90 border border-amber-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-amber-300";
+    }
+    if (icon) {
+      icon.className = isConnected
+        ? "w-4 h-4 text-emerald-400 shrink-0"
+        : "w-4 h-4 text-amber-400 shrink-0";
+    }
+    if (dot) {
+      dot.className = isConnected
+        ? "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"
+        : "w-2 h-2 rounded-full bg-amber-400 shrink-0";
     }
   }
 
