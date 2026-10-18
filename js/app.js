@@ -26,13 +26,34 @@ function extractDriveFolderId(inputStr = "") {
 export class PARIndexApp {
   constructor() {
     this.systemConfig = { ...DEFAULT_SYSTEM_CONFIG };
+    this.driveConnectionState = null; // null (auto) | 'syncing' | 'connected' | 'error'
     this.manager = new CCHCManager(DEFAULT_CRITERIA_DATA, this.systemConfig.activeYear);
     this.repo = FirebaseRepository.getInstance();
     this.ui = new UIManager(this);
   }
 
+  syncFixedHeaderOffset() {
+    if (typeof document === "undefined") return;
+    const headerEl = document.getElementById("app-fixed-header");
+    if (!headerEl) return;
+    const h = headerEl.offsetHeight;
+    if (h > 0) {
+      document.documentElement.style.setProperty("--fixed-header-height", `${h}px`);
+    }
+  }
+
   async init() {
     this.bindEvents();
+    this.syncFixedHeaderOffset();
+    if (typeof ResizeObserver !== "undefined" && typeof document !== "undefined") {
+      const headerEl = document.getElementById("app-fixed-header");
+      if (headerEl) {
+        this.headerResizeObserver = new ResizeObserver(() => {
+          this.syncFixedHeaderOffset();
+        });
+        this.headerResizeObserver.observe(headerEl);
+      }
+    }
     if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
       try {
         await document.fonts.ready;
@@ -40,6 +61,7 @@ export class PARIndexApp {
         // Proceed if fonts fail
       }
     }
+    this.syncFixedHeaderOffset();
     this.ui.renderAll();
 
     // 1. Lắng nghe trạng thái kết nối Firebase
@@ -47,9 +69,18 @@ export class PARIndexApp {
       this.ui.updateConnectionIndicator(isConnected);
     });
 
-    // 2. Lắng nghe cấu hình hệ thống (Đa năm & Google Apps Script Drive)
+    // 2. Lắng nghe cấu hình hệ thống (Đa năm & Google Apps Script Drive) từ Firebase
     this.repo.subscribeSystemConfig((cfg) => {
-      this.systemConfig = { ...this.systemConfig, ...cfg };
+      this.systemConfig = {
+        ...this.systemConfig,
+        ...cfg,
+        gasWebAppUrl: String(cfg.gasWebAppUrl || this.systemConfig.gasWebAppUrl || "").trim(),
+        driveFolderId: String(cfg.driveFolderId || this.systemConfig.driveFolderId || "").trim(),
+        driveFolderUrl: String(cfg.driveFolderUrl || this.systemConfig.driveFolderUrl || "").trim()
+      };
+      if (this.systemConfig.gasWebAppUrl && this.driveConnectionState === "error") {
+        this.driveConnectionState = null;
+      }
       if (Array.isArray(cfg.availableYears) && cfg.availableYears.length > 0) {
         for (const yr of cfg.availableYears) {
           const numYr = Number(yr);
@@ -111,7 +142,7 @@ export class PARIndexApp {
   }
 
   bindEvents() {
-    // 1. Điều hướng 5 phân hệ chính trên Top Bar & Mobile Bar
+    // 1. Điều hướng 5 phân hệ chính & Menu sổ xuống từ biểu trưng HAD trên di động
     const navTabs = ["dashboard", "scoring", "units", "reports", "settings"];
     for (const tabId of navTabs) {
       document.getElementById(`nav-tab-${tabId}`)?.addEventListener("click", (e) => {
@@ -119,6 +150,43 @@ export class PARIndexApp {
         this.ui.switchTab(tabId);
       });
     }
+
+    const hadLogoBtn = document.getElementById("had-logo-trigger");
+    hadLogoBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.ui.toggleMobileNavMenu();
+    });
+    hadLogoBtn?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        this.ui.toggleMobileNavMenu();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const navMenu = document.getElementById("primary-nav-menu");
+      if (!navMenu || !navMenu.classList.contains("mobile-menu-open")) return;
+      if (
+        !e.target.closest("#primary-nav-menu") &&
+        !e.target.closest("#had-logo-trigger")
+      ) {
+        this.ui.closeMobileNavMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.ui.closeMobileNavMenu();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (!window.matchMedia("(max-width: 767.98px)").matches) {
+        this.ui.closeMobileNavMenu();
+      }
+    });
+
     document.getElementById("brand-home-link")?.addEventListener("click", (e) => {
       e.preventDefault();
       this.ui.switchTab("dashboard");
@@ -130,11 +198,32 @@ export class PARIndexApp {
       });
     });
 
-    // 2. Chọn Năm chấm điểm trên thanh Hero Banner
+    // 2. Chọn Năm chấm điểm & Trạng thái kết nối Drive trên thanh Hero Banner
     document.getElementById("header-year-select")?.addEventListener("change", async (e) => {
       const targetYear = Number(e.target.value);
       if (targetYear) {
         await this.handleSwitchYear(targetYear);
+      }
+    });
+
+    const driveBadge = document.getElementById("drive-sync-badge");
+    driveBadge?.addEventListener("click", (e) => {
+      if (e.target.closest("#header-drive-folder-link")) {
+        return;
+      }
+      this.ui.switchTab("settings");
+      setTimeout(() => {
+        const targetSection =
+          document.getElementById("drive-config-section") ||
+          document.getElementById("settings-lock-panel");
+        targetSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    });
+    driveBadge?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        if (e.target.closest("#header-drive-folder-link")) return;
+        e.preventDefault();
+        this.ui.switchTab("settings");
       }
     });
 
@@ -494,18 +583,25 @@ export class PARIndexApp {
     const gasInput = document.getElementById("input-gas-webapp-url");
     const folderIdInput = document.getElementById("input-drive-folder-id");
     const folderUrlInput = document.getElementById("input-drive-folder-url");
+    const saveBtn = document.getElementById("btn-save-drive-config");
 
     const gasWebAppUrl = gasInput?.value.trim() || "";
     const rawFolderId = folderIdInput?.value.trim() || "";
-    const driveFolderId = extractDriveFolderId(rawFolderId);
-    const driveFolderUrl =
-      folderUrlInput?.value.trim() ||
-      (driveFolderId ? `https://drive.google.com/drive/folders/${driveFolderId}` : "");
+    const rawFolderUrl = folderUrlInput?.value.trim() || "";
 
-    if (folderIdInput && driveFolderId) {
+    // Tự động bóc tách ID thư mục từ cả 2 ô (ID hoặc Link thư mục)
+    const driveFolderId = extractDriveFolderId(rawFolderId) || extractDriveFolderId(rawFolderUrl);
+    const driveFolderUrl =
+      rawFolderUrl && rawFolderUrl.startsWith("http")
+        ? rawFolderUrl
+        : driveFolderId
+        ? `https://drive.google.com/drive/folders/${driveFolderId}`
+        : "";
+
+    if (folderIdInput) {
       folderIdInput.value = driveFolderId;
     }
-    if (folderUrlInput && driveFolderUrl) {
+    if (folderUrlInput) {
       folderUrlInput.value = driveFolderUrl;
     }
 
@@ -518,11 +614,39 @@ export class PARIndexApp {
       driveFolderUrl
     };
 
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Đang đồng bộ Firebase...";
+    }
+    this.driveConnectionState = "syncing";
+    this.ui.updateDriveStatusIndicator("syncing");
+
     try {
-      await this.repo.saveSystemConfig(this.systemConfig);
-      this.ui.showToast("Đã lưu thông số cấu hình Google Drive & Google Apps Script!");
+      const savedPayload = await this.repo.saveSystemConfig(this.systemConfig, {
+        explicitDriveUpdate: true
+      });
+      if (savedPayload) {
+        this.systemConfig = { ...this.systemConfig, ...savedPayload };
+      }
+      await this.repo.appendAuditLog(
+        "SYSTEM_CONFIG",
+        `Đồng bộ cấu hình Google Drive lên Firebase (Folder ID: ${driveFolderId || "Mặc định"})`,
+        "Quản trị hệ thống"
+      );
+      this.driveConnectionState = null;
+      this.ui.renderAll();
+      this.ui.showToast(
+        "Đã lưu và đồng bộ cấu hình Google Drive lên Firebase! Các lần mở sau sẽ tự động có sẵn."
+      );
     } catch {
+      this.driveConnectionState = null;
+      this.ui.renderAll();
       this.ui.showToast("Đã lưu cấu hình Google Drive vào bộ nhớ đệm cục bộ!", "warning");
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Lưu cấu hình Drive";
+      }
     }
   }
 
@@ -534,6 +658,8 @@ export class PARIndexApp {
       return;
     }
     if (!url.startsWith("https://script.google.com/")) {
+      this.driveConnectionState = "error";
+      this.ui.updateDriveStatusIndicator("error");
       this.ui.showToast(
         "URL phải bắt đầu bằng https://script.google.com/macros/s/.../exec",
         "warning"
@@ -546,15 +672,22 @@ export class PARIndexApp {
       btn.disabled = true;
       btn.textContent = "Đang kiểm tra...";
     }
+    this.ui.updateDriveStatusIndicator("syncing");
 
     try {
       const res = await fetch(url, { method: "GET" });
       if (res.ok) {
+        this.driveConnectionState = "connected";
+        this.ui.updateDriveStatusIndicator("connected");
         this.ui.showToast("Kết nối Google Apps Script thành công! Sẵn sàng tải file lên Google Drive.");
       } else {
+        this.driveConnectionState = "error";
+        this.ui.updateDriveStatusIndicator("error");
         this.ui.showToast(`Apps Script phản hồi mã HTTP ${res.status}. Vui lòng kiểm tra quyền 'Anyone'.`, "warning");
       }
     } catch {
+      this.driveConnectionState = null;
+      this.ui.updateDriveStatusIndicator();
       this.ui.showToast(
         "Đã ghi nhận URL Apps Script. Hãy đảm bảo bạn đã chọn quyền 'Bất kỳ ai (Anyone)' khi triển khai.",
         "warning"

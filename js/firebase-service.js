@@ -180,6 +180,7 @@ export class FirebaseRepository {
 
   /**
    * Lắng nghe cấu hình hệ thống (Năm chấm điểm & Google Apps Script Drive)
+   * Tự động đồng bộ 2 chiều giữa Cloud Firestore (cchc_system_config/main) và LocalStorage
    */
   subscribeSystemConfig(onConfigCallback) {
     const cached = this.loadLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG);
@@ -187,36 +188,118 @@ export class FirebaseRepository {
       onConfigCallback({ ...DEFAULT_SYSTEM_CONFIG, ...cached }, "local_cache");
     }
 
-    const q = query(collection(this.db, COLLECTIONS.CONFIG), where("id", "==", "main"));
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const data = snapshot.docs[0].data();
-          const merged = { ...DEFAULT_SYSTEM_CONFIG, ...data };
-          this.saveLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG, merged);
-          onConfigCallback(merged, "firestore_realtime");
+    const configDocRef = doc(this.db, COLLECTIONS.CONFIG, "main");
+
+    const handleRemoteDoc = (docSnap) => {
+      if (docSnap.exists()) {
+        const remoteData = docSnap.data() || {};
+        const localNow = this.loadLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG) || {};
+
+        // Nếu trên Firebase chưa có cấu hình Drive nhưng máy cục bộ đã lưu trước đó, tự động đẩy lên Firebase
+        const remoteHasDrive = Boolean(
+          String(remoteData.gasWebAppUrl || "").trim() ||
+            String(remoteData.driveFolderId || "").trim() ||
+            String(remoteData.driveFolderUrl || "").trim()
+        );
+        const localHasDrive = Boolean(
+          String(localNow.gasWebAppUrl || "").trim() ||
+            String(localNow.driveFolderId || "").trim() ||
+            String(localNow.driveFolderUrl || "").trim()
+        );
+
+        const merged = {
+          ...DEFAULT_SYSTEM_CONFIG,
+          ...remoteData,
+          gasWebAppUrl: remoteHasDrive
+            ? String(remoteData.gasWebAppUrl || "").trim()
+            : String(localNow.gasWebAppUrl || "").trim(),
+          driveFolderId: remoteHasDrive
+            ? String(remoteData.driveFolderId || "").trim()
+            : String(localNow.driveFolderId || "").trim(),
+          driveFolderUrl: remoteHasDrive
+            ? String(remoteData.driveFolderUrl || "").trim()
+            : String(localNow.driveFolderUrl || "").trim()
+        };
+
+        this.saveLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG, merged);
+        onConfigCallback(merged, "firestore_realtime");
+
+        if (!remoteHasDrive && localHasDrive) {
+          this.saveSystemConfig(merged, { explicitDriveUpdate: true }).catch(() => {
+            // Đã lưu LocalFallback
+          });
         }
+      } else {
+        // Nếu tài liệu cchc_system_config/main chưa tồn tại trên Firebase, khởi tạo ngay
+        const initialCfg = {
+          ...DEFAULT_SYSTEM_CONFIG,
+          ...(this.loadLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG) || {})
+        };
+        this.saveSystemConfig(initialCfg, { explicitDriveUpdate: true }).catch(() => {
+          // Bỏ qua nếu đang ngoại tuyến
+        });
+      }
+    };
+
+    const unsub = onSnapshot(
+      configDocRef,
+      (docSnap) => {
+        this.setConnectionStatus(true);
+        handleRemoteDoc(docSnap);
       },
       () => {
-        // Fallback to local config silently if not yet created
+        // Fallback to local config silently if offline
       }
     );
+
+    // Chủ động truy vấn trực tiếp từ máy chủ Firebase ngay khi khởi động để đảm bảo dữ liệu mới nhất
+    getDocFromServer(configDocRef)
+      .then((docSnap) => {
+        this.setConnectionStatus(true);
+        handleRemoteDoc(docSnap);
+      })
+      .catch(() => {
+        // Đã có onSnapshot và LocalStorage xử lý
+      });
 
     this.unsubscribers.push(unsub);
     return unsub;
   }
 
-  async saveSystemConfig(configData) {
+  async saveSystemConfig(configData, options = {}) {
+    const cached = this.loadLocalFallback(LOCAL_STORAGE_KEYS.SYSTEM_CONFIG) || {};
+    const explicitDriveUpdate = Boolean(options.explicitDriveUpdate);
+
+    const gasWebAppUrl = explicitDriveUpdate
+      ? String(configData.gasWebAppUrl || "").trim()
+      : String(configData.gasWebAppUrl || cached.gasWebAppUrl || "").trim();
+    const driveFolderId = explicitDriveUpdate
+      ? String(configData.driveFolderId || "").trim()
+      : String(configData.driveFolderId || cached.driveFolderId || "").trim();
+    const driveFolderUrl = explicitDriveUpdate
+      ? String(configData.driveFolderUrl || "").trim()
+      : String(configData.driveFolderUrl || cached.driveFolderUrl || "").trim();
+
+    const activeYear = Number(configData.activeYear || cached.activeYear || EVALUATION_YEAR);
+    const rawYears =
+      Array.isArray(configData.availableYears) && configData.availableYears.length > 0
+        ? configData.availableYears
+        : Array.isArray(cached.availableYears) && cached.availableYears.length > 0
+        ? cached.availableYears
+        : [activeYear];
+
+    const normalizedYears = [...new Set(rawYears.map((y) => Number(y)).filter((y) => y >= 2020 && y <= 2050))];
+    if (!normalizedYears.includes(activeYear)) {
+      normalizedYears.push(activeYear);
+    }
+
     const payload = {
       id: "main",
-      activeYear: Number(configData.activeYear || EVALUATION_YEAR),
-      availableYears: Array.isArray(configData.availableYears)
-        ? configData.availableYears.map((y) => Number(y)).slice(0, 20)
-        : [Number(configData.activeYear || EVALUATION_YEAR)],
-      gasWebAppUrl: String(configData.gasWebAppUrl || "").trim().slice(0, 1000),
-      driveFolderId: String(configData.driveFolderId || "").trim().slice(0, 200),
-      driveFolderUrl: String(configData.driveFolderUrl || "").trim().slice(0, 1000),
+      activeYear,
+      availableYears: normalizedYears.slice(0, 20),
+      gasWebAppUrl: gasWebAppUrl.slice(0, 1000),
+      driveFolderId: driveFolderId.slice(0, 200),
+      driveFolderUrl: driveFolderUrl.slice(0, 1000),
       updatedAt: new Date().toISOString()
     };
 
@@ -224,6 +307,7 @@ export class FirebaseRepository {
     const path = `${COLLECTIONS.CONFIG}/main`;
     try {
       await setDoc(doc(this.db, COLLECTIONS.CONFIG, "main"), payload);
+      this.setConnectionStatus(true);
       return payload;
     } catch (error) {
       this.handleFirestoreError(error, OperationType.WRITE, path);

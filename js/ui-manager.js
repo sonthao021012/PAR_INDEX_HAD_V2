@@ -134,7 +134,49 @@ export class UIManager {
       }
     });
 
+    this.closeMobileNavMenu();
     this.renderAll();
+  }
+
+  toggleMobileNavMenu(forceState = null) {
+    const navMenu = document.getElementById("primary-nav-menu");
+    const logoBtn = document.getElementById("had-logo-trigger");
+    if (!navMenu) return;
+
+    const isMobileViewport = window.matchMedia("(max-width: 767.98px)").matches;
+    if (!isMobileViewport) {
+      // Trên màn hình lớn: kích hoạt hiệu ứng sóng nảy macOS Dock cho 5 nút điều hướng
+      navMenu.classList.remove("macos-dock-wave");
+      void navMenu.offsetWidth;
+      navMenu.classList.add("macos-dock-wave");
+      setTimeout(() => {
+        navMenu.classList.remove("macos-dock-wave");
+      }, 650);
+      return;
+    }
+
+    const willOpen =
+      typeof forceState === "boolean"
+        ? forceState
+        : !navMenu.classList.contains("mobile-menu-open");
+
+    navMenu.classList.toggle("mobile-menu-open", willOpen);
+    if (logoBtn) {
+      logoBtn.classList.toggle("logo-menu-active", willOpen);
+      logoBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    }
+  }
+
+  closeMobileNavMenu() {
+    const navMenu = document.getElementById("primary-nav-menu");
+    const logoBtn = document.getElementById("had-logo-trigger");
+    if (navMenu) {
+      navMenu.classList.remove("mobile-menu-open");
+    }
+    if (logoBtn) {
+      logoBtn.classList.remove("logo-menu-active");
+      logoBtn.setAttribute("aria-expanded", "false");
+    }
   }
 
   updateConnectionIndicator(isConnected) {
@@ -152,16 +194,181 @@ export class UIManager {
       badge.className = isConnected
         ? "flex items-center gap-2 bg-slate-800/90 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-300"
         : "flex items-center gap-2 bg-slate-800/90 border border-amber-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-amber-300";
+      badge.title = isConnected
+        ? "Đồng bộ trực tuyến (Đã kết nối cơ sở dữ liệu đám mây)"
+        : "Lưu trữ ngoại tuyến (Đang dùng bộ nhớ trình duyệt)";
     }
     if (icon) {
-      icon.className = isConnected
-        ? "w-4 h-4 text-emerald-400 shrink-0"
-        : "w-4 h-4 text-amber-400 shrink-0";
+      icon.setAttribute(
+        "class",
+        isConnected
+          ? "w-4 h-4 text-emerald-400 shrink-0"
+          : "w-4 h-4 text-amber-400 shrink-0"
+      );
     }
     if (dot) {
       dot.className = isConnected
         ? "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"
         : "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+    }
+  }
+
+  /**
+   * Cập nhật trạng thái kết nối Google Drive trên Thanh tiêu đề, Cài đặt hệ thống & Modal chấm điểm
+   */
+  updateDriveStatusIndicator(overrideState = null) {
+    const sysCfg = this.app.systemConfig || {};
+    const gasUrl = String(sysCfg.gasWebAppUrl || "").trim();
+    const folderId = String(sysCfg.driveFolderId || "").trim();
+    const folderUrl =
+      String(sysCfg.driveFolderUrl || "").trim() ||
+      (folderId ? `https://drive.google.com/drive/folders/${folderId}` : "");
+
+    const state =
+      overrideState ||
+      this.app.driveConnectionState ||
+      (gasUrl ? "connected" : folderUrl ? "folder_only" : "disconnected");
+
+    const badge = document.getElementById("drive-sync-badge");
+    const icon = document.getElementById("drive-sync-icon");
+    const dot = document.getElementById("drive-sync-dot");
+    const label = document.getElementById("drive-sync-label");
+    const folderLink = document.getElementById("header-drive-folder-link");
+    const settingsBadge = document.getElementById("settings-drive-sync-status");
+    const modalBadge = document.getElementById("modal-drive-status-badge");
+
+    if (folderLink) {
+      if (folderUrl) {
+        folderLink.href = folderUrl;
+        folderLink.classList.remove("hidden");
+      } else {
+        folderLink.href = "#";
+        folderLink.classList.add("hidden");
+      }
+    }
+
+    if (state === "syncing") {
+      if (badge) {
+        badge.className =
+          "flex items-center gap-2 bg-slate-800/90 border border-blue-400/50 rounded-xl px-3 py-2 text-xs font-semibold text-blue-200 cursor-pointer hover:bg-slate-800 transition-colors";
+      }
+      if (icon) icon.setAttribute("class", "w-4 h-4 text-blue-300 shrink-0");
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-blue-400 animate-pulse shrink-0";
+      if (label) label.textContent = "Drive: Đang đồng bộ...";
+      if (settingsBadge) {
+        settingsBadge.textContent = "Đang đồng bộ cấu hình Drive lên Firebase...";
+        settingsBadge.className =
+          "px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-800 border border-blue-200";
+      }
+      return;
+    }
+
+    if (state === "error") {
+      if (badge) {
+        badge.className =
+          "flex items-center gap-2 bg-slate-800/90 border border-rose-500/50 rounded-xl px-3 py-2 text-xs font-semibold text-rose-300 cursor-pointer hover:bg-slate-800 transition-colors";
+      }
+      if (icon) icon.setAttribute("class", "w-4 h-4 text-rose-400 shrink-0");
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-rose-400 shrink-0";
+      if (label) label.textContent = "Drive: Lỗi kết nối";
+      if (settingsBadge) {
+        settingsBadge.textContent = "Cần kiểm tra lại URL Web App Google Apps Script";
+        settingsBadge.className =
+          "px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-800 border border-rose-200";
+      }
+      if (modalBadge) {
+        modalBadge.textContent = "Drive: Lỗi kết nối GAS";
+        modalBadge.className =
+          "px-2 py-0.5 text-[11px] font-semibold rounded bg-rose-50 text-rose-800 border border-rose-200";
+      }
+      return;
+    }
+
+    if (gasUrl) {
+      if (badge) {
+        badge.className =
+          "flex items-center gap-2 bg-slate-800/90 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-300 cursor-pointer hover:bg-slate-800 transition-colors";
+        badge.title = folderId
+          ? `Đã kết nối Google Drive (Thư mục ID: ${folderId}) · Bấm để xem cài đặt`
+          : "Đã kết nối Google Drive qua Apps Script · Bấm để xem cài đặt";
+      }
+      if (icon) icon.setAttribute("class", "w-4 h-4 text-emerald-400 shrink-0");
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0";
+      if (label) label.textContent = "Drive: Đã kết nối";
+      if (settingsBadge) {
+        settingsBadge.textContent = "Đã đồng bộ trên Firebase · Sẵn sàng tự động";
+        settingsBadge.className =
+          "px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200";
+      }
+      if (modalBadge) {
+        modalBadge.textContent = "Drive: Đã kết nối sẵn sàng";
+        modalBadge.className =
+          "px-2 py-0.5 text-[11px] font-semibold rounded bg-emerald-50 text-emerald-800 border border-emerald-200";
+      }
+      return;
+    }
+
+    if (folderUrl) {
+      if (badge) {
+        badge.className =
+          "flex items-center gap-2 bg-slate-800/90 border border-blue-400/40 rounded-xl px-3 py-2 text-xs font-semibold text-blue-200 cursor-pointer hover:bg-slate-800 transition-colors";
+        badge.title = "Đã gắn thư mục Google Drive (Chưa nhập URL Apps Script) · Bấm để thiết lập";
+      }
+      if (icon) icon.setAttribute("class", "w-4 h-4 text-blue-300 shrink-0");
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-blue-400 shrink-0";
+      if (label) label.textContent = "Drive: Đã gắn thư mục";
+      if (settingsBadge) {
+        settingsBadge.textContent = "Đã lưu thư mục Drive trên Firebase (Chưa có URL GAS)";
+        settingsBadge.className =
+          "px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-800 border border-blue-200";
+      }
+      if (modalBadge) {
+        modalBadge.textContent = "Drive: Chưa có URL GAS";
+        modalBadge.className =
+          "px-2 py-0.5 text-[11px] font-semibold rounded bg-amber-50 text-amber-800 border border-amber-200";
+      }
+      return;
+    }
+
+    // Trạng thái chưa kết nối
+    if (badge) {
+      badge.className =
+        "flex items-center gap-2 bg-slate-800/90 border border-amber-500/40 rounded-xl px-3 py-2 text-xs font-semibold text-amber-300 cursor-pointer hover:bg-slate-800 transition-colors";
+      badge.title = "Chưa cấu hình Google Drive · Bấm để mở Cài đặt hệ thống";
+    }
+    if (icon) icon.setAttribute("class", "w-4 h-4 text-amber-400 shrink-0");
+    if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+    if (label) label.textContent = "Drive: Chưa kết nối";
+    if (settingsBadge) {
+      settingsBadge.textContent = "Chưa cấu hình Drive";
+      settingsBadge.className =
+        "px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-amber-50 text-amber-800 border border-amber-200";
+    }
+    if (modalBadge) {
+      modalBadge.textContent = "Drive: Chưa kết nối";
+      modalBadge.className =
+        "px-2 py-0.5 text-[11px] font-semibold rounded bg-amber-50 text-amber-800 border border-amber-200";
+    }
+  }
+
+  syncDriveConfigInputs() {
+    const sysCfg = this.app.systemConfig || {};
+    const gasInput = document.getElementById("input-gas-webapp-url");
+    const folderIdInput = document.getElementById("input-drive-folder-id");
+    const folderUrlInput = document.getElementById("input-drive-folder-url");
+    const gasCodePreview = document.getElementById("gas-code-preview");
+
+    if (gasInput && document.activeElement !== gasInput) {
+      gasInput.value = sysCfg.gasWebAppUrl || "";
+    }
+    if (folderIdInput && document.activeElement !== folderIdInput) {
+      folderIdInput.value = sysCfg.driveFolderId || "";
+    }
+    if (folderUrlInput && document.activeElement !== folderUrlInput) {
+      folderUrlInput.value = sysCfg.driveFolderUrl || "";
+    }
+    if (gasCodePreview && !gasCodePreview.textContent) {
+      gasCodePreview.textContent = GAS_SCRIPT_TEMPLATE;
     }
   }
 
@@ -181,7 +388,7 @@ export class UIManager {
           (yr) =>
             `<option value="${yr}" class="text-slate-900" ${
               Number(yr) === Number(activeYear) ? "selected" : ""
-            }>Năm ${yr}</option>`
+            }>${yr}</option>`
         )
         .join("");
     }
@@ -189,6 +396,8 @@ export class UIManager {
 
   renderAll() {
     this.renderYearSelector();
+    this.updateDriveStatusIndicator();
+    this.syncDriveConfigInputs();
     this.renderKPIHeader();
     if (this.activeTab === "dashboard") {
       this.renderDashboardView();
@@ -1159,24 +1368,8 @@ export class UIManager {
     }
 
     // 3. Render Cấu hình Google Drive & Google Apps Script
-    const sysCfg = this.app.systemConfig || {};
-    const gasInput = document.getElementById("input-gas-webapp-url");
-    const folderIdInput = document.getElementById("input-drive-folder-id");
-    const folderUrlInput = document.getElementById("input-drive-folder-url");
-    const gasCodePreview = document.getElementById("gas-code-preview");
-
-    if (gasInput && document.activeElement !== gasInput) {
-      gasInput.value = sysCfg.gasWebAppUrl || "";
-    }
-    if (folderIdInput && document.activeElement !== folderIdInput) {
-      folderIdInput.value = sysCfg.driveFolderId || "";
-    }
-    if (folderUrlInput && document.activeElement !== folderUrlInput) {
-      folderUrlInput.value = sysCfg.driveFolderUrl || "";
-    }
-    if (gasCodePreview && !gasCodePreview.textContent) {
-      gasCodePreview.textContent = GAS_SCRIPT_TEMPLATE;
-    }
+    this.syncDriveConfigInputs();
+    this.updateDriveStatusIndicator();
 
     // 4. Render Bảng Quản trị Danh mục Tiêu chí (Thêm / Sửa / Xóa)
     this.renderSettingsCriteriaTable();
