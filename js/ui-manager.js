@@ -1717,6 +1717,91 @@ export class UIManager {
       return;
     }
 
+    if (c.type === "formula" && c.formulaType === "ai_applications") {
+      const onlyCityAI = Number(this.tempInputs.onlyCityAI || 0) === 1;
+      const aiParts = [
+        {
+          key: "aiForStaff",
+          label: "1. Có ứng dụng AI phục vụ công chức, viên chức",
+          score: 1.0
+        },
+        {
+          key: "aiForCitizen",
+          label: "2. Có ứng dụng AI phục vụ người dân, doanh nghiệp tra cứu TTHC",
+          score: 1.0
+        },
+        {
+          key: "aiAdvanced",
+          label: "3. Có ứng dụng AI nâng cao khác phục vụ quản lý đô thị, tổng hợp dữ liệu",
+          score: 1.0
+        }
+      ];
+
+      container.innerHTML = `
+        <div class="space-y-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div>
+            <label for="modal-formula-onlyCityAI" class="block text-xs font-bold text-slate-700 mb-1.5">
+              Nguồn xây dựng ứng dụng AI:
+            </label>
+            <select
+              id="modal-formula-onlyCityAI"
+              class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-800"
+            >
+              <option value="0" ${!onlyCityAI ? "selected" : ""}>
+                0 — Phường tự xây dựng ứng dụng AI riêng (Tối đa 3,00 điểm)
+              </option>
+              <option value="1" ${onlyCityAI ? "selected" : ""}>
+                1 — Chỉ triển khai ứng dụng AI do Thành phố xây dựng (Giới hạn tối đa 1,00 điểm)
+              </option>
+            </select>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">
+              Chọn các phần ứng dụng AI đã triển khai (Mỗi phần 1,00 điểm):
+            </div>
+            ${aiParts
+              .map(
+                (part) => `
+              <label class="flex items-start gap-3 cursor-pointer py-1">
+                <input
+                  type="checkbox"
+                  id="modal-formula-${this.escapeHtml(part.key)}"
+                  data-ai-part-key="${this.escapeHtml(part.key)}"
+                  class="mt-0.5 w-4 h-4 text-blue-900 rounded border-slate-300"
+                  ${Number(this.tempInputs[part.key] || 0) > 0 ? "checked" : ""}
+                />
+                <span class="text-sm text-slate-800">
+                  ${this.escapeHtml(part.label)}
+                  <span class="font-mono text-xs text-blue-900 font-bold">(+${this.formatNum(
+                    part.score
+                  )}đ)</span>
+                </span>
+              </label>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      `;
+
+      container.querySelector("#modal-formula-onlyCityAI")?.addEventListener("change", (e) => {
+        this.tempInputs.onlyCityAI = Number(e.target.value || 0);
+        this.recalculateModalPreviewScore();
+      });
+
+      container.querySelectorAll("[data-ai-part-key]").forEach((chk) => {
+        chk.addEventListener("change", () => {
+          const key = chk.getAttribute("data-ai-part-key");
+          if (key) {
+            this.tempInputs[key] = chk.checked ? 1 : 0;
+            this.recalculateModalPreviewScore();
+          }
+        });
+      });
+      return;
+    }
+
     if (c.type === "formula") {
       const fields = c.formulaConfig?.fields || [];
       container.innerHTML = `

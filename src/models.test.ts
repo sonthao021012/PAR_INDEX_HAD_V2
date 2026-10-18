@@ -89,6 +89,36 @@ test("Polymorphic scoring calculation works when user inputs real values", () =>
   const critII2a = manager.getCriterionById("II.2.a");
   assert.equal(critII2a.calculateScore({ selectedTier: "full" }), 1.0);
   assert.equal(critII2a.calculateScore({ selectedTier: "partial" }), 0.5);
+
+  // 6. FormulaCriterion: VII.2.b (Ứng dụng AI: aiForStaff + aiForCitizen + aiAdvanced, giới hạn 1,0đ nếu onlyCityAI=1)
+  const critVII2b = manager.getCriterionById("VII.2.b");
+  assert.equal(
+    critVII2b.calculateScore({ onlyCityAI: 0, aiForStaff: 1, aiForCitizen: 1, aiAdvanced: 1 }),
+    3.0
+  );
+  assert.equal(
+    critVII2b.calculateScore({ onlyCityAI: 0, aiForStaff: 1, aiForCitizen: 1, aiAdvanced: 0 }),
+    2.0
+  );
+  assert.equal(
+    critVII2b.calculateScore({ onlyCityAI: 1, aiForStaff: 1, aiForCitizen: 1, aiAdvanced: 1 }),
+    1.0
+  );
+
+  // 7. ChecklistCriterion: IX.1.a (Điểm thưởng đối thoại: cộng điểm từng phần 0,33đ / 0,66đ / 1,00đ)
+  const critIX1a = manager.getCriterionById("IX.1.a");
+  assert.equal(
+    critIX1a.calculateScore({ doc_plan_invite: true, doc_conclusion: false, doc_followup: false }),
+    0.33
+  );
+  assert.equal(
+    critIX1a.calculateScore({ doc_plan_invite: true, doc_conclusion: true, doc_followup: false }),
+    0.66
+  );
+  assert.equal(
+    critIX1a.calculateScore({ doc_plan_invite: true, doc_conclusion: true, doc_followup: true }),
+    1.0
+  );
 });
 
 test("System Settings: Admin password, GAS template, Multi-year management, Criteria CRUD, and Backup/Restore", () => {

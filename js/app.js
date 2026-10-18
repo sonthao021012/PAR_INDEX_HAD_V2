@@ -122,6 +122,18 @@ export class PARIndexApp {
         this.manager.criteriaMap = this.manager.yearsDataMap.get(yr);
         for (const d of yrDocs) {
           this.manager.updateCriterionFromSnapshot(d);
+          const rawId = String(d.id || "").startsWith(`${yr}_`)
+            ? String(d.id).slice(`${yr}_`.length)
+            : String(d.id || "");
+          const updatedCrit = this.manager.getCriterionById(rawId);
+          if (
+            updatedCrit &&
+            d.inputs &&
+            Object.keys(d.inputs).length > 0 &&
+            Number(d.selfScore ?? 0) !== Number(updatedCrit.selfScore)
+          ) {
+            this.repo.saveCriterion(updatedCrit, yr).catch(() => {});
+          }
         }
         this.manager.activeYear = prevActive;
         this.manager.criteriaMap = this.manager.yearsDataMap.get(prevActive);

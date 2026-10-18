@@ -223,15 +223,6 @@ export class ChecklistCriterion extends BaseCriterion {
   calculateScore(inputData = this.inputs) {
     this.inputs = { ...this.inputs, ...inputData };
     const items = this.formulaConfig?.items || [];
-    if (this.formulaConfig?.allRequiredForScore) {
-      const allChecked = items.every((item) => Boolean(this.inputs[item.key]));
-      this.selfScore = allChecked ? this.maxScore : 0.0;
-      this.dynamicWarning = allChecked
-        ? ""
-        : "CẢNH BÁO: Tiêu chí yêu cầu phải đạt đầy đủ tất cả các thành phần mới được tính điểm!";
-      return this.selfScore;
-    }
-
     let sum = 0;
     const missingLabels = [];
     for (const item of items) {
@@ -241,9 +232,18 @@ export class ChecklistCriterion extends BaseCriterion {
         missingLabels.push(item.label);
       }
     }
-    this.selfScore = Math.min(this.maxScore, Number(sum.toFixed(2)));
-    this.dynamicWarning =
-      missingLabels.length > 0 ? `Chưa hoàn thành ${missingLabels.length} nội dung thành phần.` : "";
+    const allChecked = items.length > 0 && missingLabels.length === 0;
+    this.selfScore = allChecked ? this.maxScore : Math.min(this.maxScore, Number(sum.toFixed(2)));
+
+    if (missingLabels.length > 0) {
+      if (this.formulaConfig?.allRequiredForScore && this.selfScore > 0) {
+        this.dynamicWarning = `Đã đạt ${items.length - missingLabels.length}/${items.length} thành phần (${this.selfScore.toFixed(2)}/${this.maxScore.toFixed(2)}đ). Lưu ý bổ sung đủ cả ${items.length} thành phần để đạt tối đa khi thẩm định.`;
+      } else {
+        this.dynamicWarning = `Chưa hoàn thành ${missingLabels.length} nội dung thành phần.`;
+      }
+    } else {
+      this.dynamicWarning = "";
+    }
     return this.selfScore;
   }
 }
@@ -435,6 +435,26 @@ export class FormulaCriterion extends BaseCriterion {
         else warns.push(`Tái sử dụng dữ liệu số hóa đạt ${reuse}% (< 30%)`);
         this.selfScore = score;
         this.dynamicWarning = warns.join("; ");
+        break;
+      }
+
+      case "ai_applications": {
+        const onlyCityAI = Number(this.inputs.onlyCityAI || 0) === 1;
+        const staff = Number(this.inputs.aiForStaff || 0) > 0 ? 1.0 : 0.0;
+        const citizen = Number(this.inputs.aiForCitizen || 0) > 0 ? 1.0 : 0.0;
+        const advanced = Number(this.inputs.aiAdvanced || 0) > 0 ? 1.0 : 0.0;
+        const rawScore = Number((staff + citizen + advanced).toFixed(2));
+
+        if (onlyCityAI) {
+          this.selfScore = rawScore > 0 ? Math.min(1.0, rawScore) : 1.0;
+          this.dynamicWarning =
+            "Đơn vị đang chọn 'Chỉ triển khai ứng dụng AI của TP' (Nguồn = 1) nên chỉ được tính tối đa 1,00/3,00 điểm. Nếu do Phường tự xây dựng, hãy chọn '0 = Phường tự xây dựng' để được cộng đủ tối đa 3,00 điểm.";
+        } else {
+          this.selfScore = Math.min(this.maxScore, rawScore);
+          if (this.selfScore < this.maxScore) {
+            this.dynamicWarning = `Đã đạt ${rawScore}/3 nội dung ứng dụng AI do đơn vị tự xây dựng (${this.selfScore.toFixed(2)}/${this.maxScore.toFixed(2)}đ).`;
+          }
+        }
         break;
       }
 
@@ -833,15 +853,13 @@ export class CCHCManager {
       existing.updatedAt = docData.updatedAt || existing.updatedAt;
       if (docData.inputs && Object.keys(docData.inputs).length > 0) {
         existing.calculateScore(docData.inputs);
+        existing.verifiedScore = existing.selfScore;
       } else {
         existing.inputs = {};
         existing.selfScore = Number(docData.selfScore || 0);
+        existing.verifiedScore =
+          typeof docData.verifiedScore === "number" ? docData.verifiedScore : existing.selfScore;
         existing.dynamicWarning = "";
-      }
-      if (typeof docData.verifiedScore === "number") {
-        existing.verifiedScore = docData.verifiedScore;
-      } else {
-        existing.verifiedScore = existing.selfScore;
       }
       if (Array.isArray(docData.evidences)) {
         existing.evidences = docData.evidences.map((ev) => new EvidenceItem(ev));
